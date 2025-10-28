@@ -1,0 +1,6 @@
+@fake_wiseflow_be_HostAddress = http://localhost:5048
+
+GET {{fake_wiseflow_be_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

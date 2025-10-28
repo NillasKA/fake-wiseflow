@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "TVzC6kivCgs=",
+  "success": true,
+  "projectFilePath": "/home/nicklaskramer/Documents/Projects/fake-wiseflow/fake-wiseflow-be/fake-wiseflow-be.csproj",
+  "expectedPackageFiles": [
+    "/home/nicklaskramer/.nuget/packages/microsoft.aspnetcore.openapi/9.0.8/microsoft.aspnetcore.openapi.9.0.8.nupkg.sha512",
+    "/home/nicklaskramer/.nuget/packages/microsoft.openapi/1.6.17/microsoft.openapi.1.6.17.nupkg.sha512"
+  ],
+  "logs": []
+}
