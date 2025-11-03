@@ -1,3 +1,5 @@
+using System;
+
 namespace fake_wiseflow_be;
 
 public class WeatherForecast
