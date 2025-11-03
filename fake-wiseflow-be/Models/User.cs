@@ -1,8 +1,10 @@
+using AspNetCore.Identity.Mongo.Model;
 using Microsoft.AspNetCore.Identity;
+using MongoDB.Driver;
 
 namespace fake_wiseflow_be.Models;
 
-public class User : IdentityUser
+public class User : MongoUser
 {
     public UserRole Role { get; set; }
 
@@ -15,6 +17,3 @@ public enum UserRole
     InstitutionAdmin,
     SuperAdmin
 }
-
-
-
