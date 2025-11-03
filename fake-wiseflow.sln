@@ -2,8 +2,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fake-wiseflow-be", "fake-wiseflow-be\fake-wiseflow-be.csproj", "{ED2D7987-10CA-4A62-BACF-A5CAEF3CF159}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fake-wiseflow-fe", "fake-wiseflow-fe\fake-wiseflow-fe.csproj", "{B56113B5-C4CE-4DEE-BD16-85B2DBC65EBF}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
