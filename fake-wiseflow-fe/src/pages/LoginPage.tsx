@@ -1,7 +1,6 @@
 ﻿import "../stylesheets/pages/LoginPage.css"
 import { useState } from "react";
 import { login, getMe } from "../api/auth";
-import { useNavigate } from "react-router-dom";
 
 type Props = {
     onLogin?: (user: unknown) => void;
@@ -14,11 +13,11 @@ export default function LoginPage({ onLogin, verifyAfterLogin = true }: Props) {
     const [password, setPassword] = useState<string>("");
     const [error, setError] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
-    const navigate = useNavigate();
 
-    async function handleSubmit() {
+    async function handleSubmit(event: React.FormEvent) {
+        event.preventDefault();
         setLoading(true);
-        
+
         try {
             await login({ email, password });
 
@@ -27,8 +26,9 @@ export default function LoginPage({ onLogin, verifyAfterLogin = true }: Props) {
                 me = await getMe();
             }
 
-            onLogin?.(me);
-            navigate("/");
+            if (onLogin) {
+                onLogin(me || { email });
+            }
         } catch (error: unknown) {
             setError(error instanceof Error ? error.message : "Ukendt fejl. Kunne ikke logge ind.");
         } finally {
