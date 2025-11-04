@@ -5,39 +5,31 @@
 
 const API_BASE = "https://localhost:7130";
 
-export async function login(req: LoginRequest): Promise<void> {
-    const res = await fetch(`${API_BASE}/api/Auth/login`, {
+export async function login(loginRequest : LoginRequest) {
+    const response = await fetch(`${API_BASE}/api/Auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(req),
+        body: JSON.stringify(loginRequest),
         credentials: "include"
     });
 
-    // Try to grab server error text if any
-    if (!res.ok) {
-        let message = `Login failed (${res.status})`;
-        try {
-            const data = await res.json();
-            message =
-                (data?.message as string) ||
-                (data?.error as string) ||
-                message;
-        } catch {
-            /* ignore parsing errors */
-        }
+    if (!response.ok) {
+        let message = `Login failed (${response.status})`;
+  
+        const data = await response.json();
+        message = (data?.message as string) || (data?.error as string) || message;
+    
         throw new Error(message);
     }
 }
 
-/**
- * Example of an authenticated GET using the cookie.
- * Point this to any endpoint that requires auth on your API.
- */
-export async function getMe<T = unknown>(): Promise<T> {
-    const res = await fetch(`${API_BASE}/api/Auth/me`, {
+export async function getMe() {
+    const response = await fetch(`${API_BASE}/api/Auth/me`, {
         method: "GET",
         credentials: "include",
     });
-    if (!res.ok) throw new Error(`Auth check failed (${res.status})`);
-    return (await res.json()) as T;
+    
+    if (!response.ok) throw new Error(`Auth check failed (${response.status})`);
+    
+    return await response.json();
 }

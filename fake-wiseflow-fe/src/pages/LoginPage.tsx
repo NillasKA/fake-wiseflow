@@ -1,40 +1,36 @@
 ﻿import "../stylesheets/pages/LoginPage.css"
-import React, { useState } from "react";
+import { useState } from "react";
 import { login, getMe } from "../api/auth";
 import { useNavigate } from "react-router-dom";
 
 type Props = {
     onLogin?: (user: unknown) => void;
     verifyAfterLogin?: boolean;
-    redirectTo?: string; // default "/"
+    redirectTo?: string;
 };
 
-export default function LoginPage({
-                                      onLogin,
-                                      verifyAfterLogin = true,
-                                  }: Props) {
+export default function LoginPage({ onLogin, verifyAfterLogin = true }: Props) {
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [error, setError] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
     const navigate = useNavigate();
 
-    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-        e.preventDefault();
-        setError("");
+    async function handleSubmit() {
         setLoading(true);
+        
         try {
             await login({ email, password });
 
-            let me: unknown = null;
+            let me = null;
             if (verifyAfterLogin) {
                 me = await getMe();
             }
 
             onLogin?.(me);
             navigate("/");
-        } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : "Kunne ikke logge ind.");
+        } catch (error: unknown) {
+            setError(error instanceof Error ? error.message : "Ukendt fejl. Kunne ikke logge ind.");
         } finally {
             setLoading(false);
         }

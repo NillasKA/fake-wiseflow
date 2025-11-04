@@ -12,7 +12,6 @@
     grid-template-rows: auto 1fr auto;
 }
 
-/* Center block */
 .fw-main {
     display: grid;
     place-items: start center;
@@ -28,7 +27,6 @@
     letter-spacing: 0.2px;
 }
 
-/* Card */
 .fw-card {
     width: 100%;
     max-width: 420px;
@@ -40,7 +38,6 @@
     text-align: left;
 }
 
-/* “FW” mark */
 .fw-logo {
     margin-bottom: 32px;
     display: grid;
@@ -50,7 +47,6 @@
     font-size: 24px;
 }
 
-/* Fields */
 .fw-field { margin-top: 14px; }
 
 .fw-field label {
@@ -84,7 +80,6 @@
     box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
 }
 
-/* Button + link */
 .fw-btn {
     margin-top: 18px;
     width: 100%;
@@ -112,7 +107,6 @@
     text-decoration: underline;
 }
 
-/* Help text */
 .fw-hint {
     margin: 16px 0 0;
     font-size: 11px;
@@ -123,9 +117,4 @@
 
 .fw-button-area {
     margin-top: 32px;
-}
-
-/* Small screens */
-@media (max-width: 420px) {
-    .fw-card { padding: 22px 18px 18px; }
 }
