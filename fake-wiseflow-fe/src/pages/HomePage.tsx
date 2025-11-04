@@ -1,4 +1,4 @@
-import "../stylesheets/pages/LoginPage.css"
+import "../stylesheets/pages/HomePage.css"
 
 export default function HomePage() {
     return (
