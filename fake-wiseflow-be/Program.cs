@@ -13,6 +13,21 @@ var builder = WebApplication.CreateBuilder(args)
     .ActivateServices()
     .ActivateRepositories();
 
+var allowedOrigins = new[]
+{
+    "http://localhost:5173", "https://localhost:5173",
+    "http://localhost:3000", "https://localhost:3000"
+};
+
+builder.Services.AddCors(opt =>
+{
+    opt.AddPolicy("frontend", policy =>
+        policy.WithOrigins(allowedOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials());
+});
+
 builder.Services.Configure<DatabaseSettings>(
     builder.Configuration.GetSection("fake-wiseflow-db"));
 
@@ -54,6 +69,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("frontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

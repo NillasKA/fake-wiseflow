@@ -1,0 +1,11 @@
+﻿:root {
+    --bg: #5c88a4;      /* blå baggrund */
+    --card: #ffffff;    /* kort */
+    --text: #2a3b47;    /* primær tekst */
+    --muted: #6e8897;   /* sekundær tekst */
+    --line: #dfe7ec;    /* input-streg */
+    --btn: #5f87a3;     /* knap */
+    --btn-hover: #547a94;
+    --focus: #3b82f6;
+    --radius: 10px;
+}

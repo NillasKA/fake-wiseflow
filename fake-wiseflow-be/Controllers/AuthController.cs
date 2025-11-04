@@ -1,4 +1,6 @@
 using fake_wiseflow_be.Models;
+using fake_wiseflow_be.Models.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,10 +20,12 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register(string email, string password)
+    public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
     {
-        var user = new User { UserName = email, Email = email, Role = UserRole.Student };
-        var result = await _users.CreateAsync(user, password);
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
+
+        var user = new User { UserName = registerDto.Email, Email = registerDto.Email, Role = UserRole.Student };
+        var result = await _users.CreateAsync(user, registerDto.Password);
         if (!result.Succeeded) return BadRequest(result.Errors);
 
         await _users.AddToRoleAsync(user, UserRole.Student.ToString());
@@ -29,10 +33,16 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login(string email, string password)
+    public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
-        var result = await _signIn.PasswordSignInAsync(email, password, isPersistent: false, lockoutOnFailure: false);
-        return result.Succeeded ? Ok(result.ToString()) : Unauthorized();
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
+
+        var result = await _signIn.PasswordSignInAsync(dto.Email, dto.Password,
+            isPersistent: true, lockoutOnFailure: true);
+
+        if (!result.Succeeded) return Unauthorized(new { message = "Invalid credentials" });
+
+        return Ok();
     }
 
     [HttpPost("logout")]
@@ -40,5 +50,25 @@ public class AuthController : ControllerBase
     {
         await _signIn.SignOutAsync();
         return Ok();
+    }
+
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<IActionResult> Me()
+    {
+        var name = User.Identity?.Name;
+        if (string.IsNullOrEmpty(name))
+        {
+            return Unauthorized();
+        }
+
+        var user = await _users.FindByNameAsync(name);
+        if (user is null)
+        {
+            return Unauthorized();
+        }
+
+        var roles = await _users.GetRolesAsync(user);
+        return Ok(new { user.Id, user.Email, user.UserName, Roles = roles });
     }
 }
