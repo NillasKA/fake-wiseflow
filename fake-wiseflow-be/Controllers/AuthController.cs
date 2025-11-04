@@ -32,7 +32,7 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Login(string email, string password)
     {
         var result = await _signIn.PasswordSignInAsync(email, password, isPersistent: false, lockoutOnFailure: false);
-        return result.Succeeded ? Ok() : Unauthorized();
+        return result.Succeeded ? Ok(result.ToString()) : Unauthorized();
     }
 
     [HttpPost("logout")]
