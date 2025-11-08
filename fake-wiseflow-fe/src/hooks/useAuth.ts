@@ -35,7 +35,7 @@ export function useAuth() {
                 setLoading(false);
             }
         })();
-    });
+    }, []);
 
     return { user, setUser, loading };
 }
