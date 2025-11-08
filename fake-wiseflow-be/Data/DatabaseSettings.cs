@@ -5,7 +5,10 @@ public class DatabaseSettings
     public string ConnectionString { get; set; } = default!;
 
     public string DatabaseName { get; set; } = default!;
+    
+    public string ExamsCollectionName => "Exams";
 
-    public string ExamsCollectionName { get; set; } = "Exams";
-    public string UsersCollectionName { get; set; } = "Users";
+    public string InstitutionsCollectionName => "Institutions";
+
+    public string UsersCollectionName => "Users";
 }
