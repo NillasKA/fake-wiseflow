@@ -39,6 +39,8 @@ public class StudentController : ControllerBase
         var result = await _userManager.CreateAsync(student, request.Password);
         if (result.Succeeded)
         {
+            await _userManager.AddToRoleAsync(student, UserRole.Student.ToString()); // Assign role to user
+
             _logger.LogInformation("Student created: {Email}", student.Email);
             return CreatedAtAction(nameof(GetStudent), new { id = student.Id }, student);
         }
