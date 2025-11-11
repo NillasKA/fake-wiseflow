@@ -1,9 +1,7 @@
 import React from "react";
 import "../stylesheets/components/Header.css";
-import {useAuth} from "../hooks/useAuth.ts";
 
 const Header: React.FC = () => {
-    const { user } = useAuth();
 
     return (
         <header className="app-header">
@@ -21,7 +19,7 @@ const Header: React.FC = () => {
                 </div>
 
                 <div className="right">
-                    <span className="greeting">Hej {user?.userName}!</span>
+                    <span className="greeting">Hej User!</span>
                 </div>
             </div>
         </header>

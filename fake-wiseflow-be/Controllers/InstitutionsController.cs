@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace fake_wiseflow_be.Controllers;
 
 [ApiController]
-[Authorize(Roles = "InstitutionAdmin, SuperAdmin")]
+//[Authorize(Roles = "InstitutionAdmin, SuperAdmin")]
 [Route("api/[controller]")]
 public class InstitutionsController : ControllerBase
 {
