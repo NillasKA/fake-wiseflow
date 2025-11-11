@@ -1,0 +1,102 @@
+:root {
+    --header-bg: #5f869b;   /* tilpas hvis du vil */
+    --header-radius: 8px;
+}
+
+.app-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    width: 100%;
+    background: var(--bg);
+    color: #fff;
+    border-radius: var(--header-radius);
+    /* lidt luft rundt om den afrundede bar */
+    padding: 4px;
+}
+
+.header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    height: 42px;
+    padding: 0 14px;
+    border-radius: calc(var(--header-radius) - 2px);
+}
+
+/* Venstre side */
+.left {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    font-weight: 800;
+    font-size: 24px;
+    letter-spacing: 1px;
+    color: #fff;
+    text-decoration: none;
+}
+
+.nav {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.nav a {
+    color: #eef6fb;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.nav a:hover {
+    opacity: 0.9;
+    text-decoration: underline;
+}
+
+/* Lodret separator */
+.divider {
+    width: 1px;
+    height: 18px;
+    background: rgba(255,255,255,0.6);
+    display: inline-block;
+}
+
+/* Højre side */
+.right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.greeting {
+    color: #ffffff;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.avatar {
+    display: inline-grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.85);
+    color: #fff;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+}
+
+.avatar:hover { opacity: 0.9; }
+
+/* Små skærme: gem teksten men behold ikonet */
+@media (max-width: 520px) {
+    .greeting { display: none; }
+    .nav { gap: 12px; }
+}
