@@ -49,8 +49,6 @@ public class StudentController : ControllerBase
 
     }
 
-
-
     [HttpGet("{id}")]
     public async Task<IActionResult> GetStudent(string id)
     {
@@ -67,6 +65,23 @@ public class StudentController : ControllerBase
             email = user.Email,
             role = user.Role.ToString()
         });
+    }
+
+    [HttpGet("all")]
+    public async Task<IActionResult> GetAllStudents()
+    {
+        var students = _userManager.Users
+            .Where(u => u.Role == UserRole.Student)
+            .Select(u => new
+            {
+                id = u.Id,
+                email = u.Email,
+                userName = u.UserName,
+                role = u.Role.ToString()
+            })
+            .ToList();
+
+        return Ok(students);
     }
 
     [HttpDelete("{id}")]
@@ -90,12 +105,6 @@ public class StudentController : ControllerBase
         return BadRequest(new { errors = result.Errors.Select(e => e.Description) });
     }
 }
-
-    
-
-
-
-
 
 public class CreateStudentRequest
 {
