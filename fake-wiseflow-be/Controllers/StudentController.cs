@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using fake_wiseflow_be.Models;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace fake_wiseflow_be.Controllers;
 
@@ -29,24 +31,56 @@ public class StudentController : ControllerBase
         if (existingUser != null)
             return BadRequest("A user with this email already exists.");
 
+        // Generate a secure random password
+        var generatedPassword = GenerateSecurePassword();
+
         var student = new User
         {
-            UserName = request.Email, // Identity requires Username, so im passing the email as a username for now
+            UserName = request.Email,
             Email = request.Email,
             Role = UserRole.Student
         };
 
-        var result = await _userManager.CreateAsync(student, request.Password);
+        var result = await _userManager.CreateAsync(student, generatedPassword);
         if (result.Succeeded)
         {
-            await _userManager.AddToRoleAsync(student, UserRole.Student.ToString()); // Assign role to user
+            await _userManager.AddToRoleAsync(student, UserRole.Student.ToString());
 
             _logger.LogInformation("Student created: {Email}", student.Email);
-            return CreatedAtAction(nameof(GetStudent), new { id = student.Id }, student);
+            
+            // Return the generated password so admin can communicate it to the user
+            return Ok(new
+            {
+                id = student.Id,
+                email = student.Email,
+                userName = student.UserName,
+                role = student.Role.ToString(),
+                temporaryPassword = generatedPassword,
+                message = "User created successfully. Please share this temporary password with the user securely."
+            });
         }
 
         return BadRequest(new { Errors = result.Errors });
 
+    }
+
+    private static string GenerateSecurePassword(int length = 12)
+    {
+        const string validChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*";
+        var password = new StringBuilder();
+        
+        using (var rng = RandomNumberGenerator.Create())
+        {
+            var buffer = new byte[length];
+            rng.GetBytes(buffer);
+            
+            foreach (var b in buffer)
+            {
+                password.Append(validChars[b % validChars.Length]);
+            }
+        }
+        
+        return password.ToString();
     }
 
     [HttpGet("{id}")]
@@ -109,5 +143,5 @@ public class StudentController : ControllerBase
 public class CreateStudentRequest
 {
     public string Email { get; set; } = default!;
-    public string Password { get; set; } = default!;
+    public string Password { get; set; } = default!; // Keep for backwards compatibility but make optional
 }

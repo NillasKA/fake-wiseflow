@@ -34,15 +34,13 @@ export default function UserModule() {
     }
 
     async function createUser(userData: { name: string; email: string; role: string }) {
-        const res = await fetch(API_URL, {
+        const res = await fetch(`${API_URL}/create`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
             body: JSON.stringify({
-                userName: userData.name,
                 email: userData.email,
-                password: "TempPassword123!", // You might want to generate this or send email
-                role: userData.role
+                password: "" // Not needed anymore, but kept for compatibility
             })
         });
 
@@ -51,7 +49,10 @@ export default function UserModule() {
             throw new Error(error || "Failed to create user");
         }
 
+        const result = await res.json();
         await getAllUsers();
+        
+        return result; // Return the response containing temporaryPassword
     }
 
     async function deleteUser(id: string) {
