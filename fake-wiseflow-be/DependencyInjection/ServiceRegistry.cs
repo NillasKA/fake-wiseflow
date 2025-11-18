@@ -5,6 +5,7 @@ public static class ServiceRegistry
     public static WebApplicationBuilder ActivateServices(this WebApplicationBuilder builder)
     {
         builder.Services.AddScoped<IInstitutionService, InstitutionService>();
+        builder.Services.AddScoped<IStudentService, StudentService>();
         return builder;
     }
 }
