@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using fake_wiseflow_be.Services;
+using fake_wiseflow_be.Models.DTOs;
 
 namespace fake_wiseflow_be.Controllers;
 
