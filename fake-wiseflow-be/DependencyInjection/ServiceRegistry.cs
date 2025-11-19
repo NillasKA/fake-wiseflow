@@ -6,6 +6,7 @@ public static class ServiceRegistry
     {
         builder.Services.AddScoped<IInstitutionService, InstitutionService>();
         builder.Services.AddScoped<IStudentService, StudentService>();
+        builder.Services.AddScoped<IExaminatorService, ExaminatorService>();    
         return builder;
     }
 }

@@ -6,58 +6,58 @@ using Microsoft.AspNetCore.Identity;
 
 namespace fake_wiseflow_be.Services;
 
-public class StudentService : IStudentService
+public class ExaminatorService : IExaminatorService
 {
     private readonly UserManager<User> _userManager;
-    private readonly ILogger<StudentService> _logger;
+    private readonly ILogger<ExaminatorService> _logger;
 
-    public StudentService(UserManager<User> userManager, ILogger<StudentService> logger)
+    public ExaminatorService(UserManager<User> userManager, ILogger<ExaminatorService> logger)
     {
         _userManager = userManager;
         _logger = logger;
     }
 
-    public async Task<List<StudentDto>> GetAllStudentsAsync()
+    public async Task<List<ExaminatorDto>> GetAllExaminatorsAsync()
     {
         var allUsers = _userManager.Users.ToList();
-        var students = new List<StudentDto>();
+        var examinators = new List<ExaminatorDto>();
 
         foreach (var user in allUsers)
         {
             var roles = await _userManager.GetRolesAsync(user);
-            if (roles.Contains("Student"))
+            if (roles.Contains("Examinator"))
             {
-                students.Add(new StudentDto
+                examinators.Add(new ExaminatorDto
                 {
                     Id = user.Id.ToString(),
                     Email = user.Email ?? string.Empty,
                     UserName = user.UserName ?? string.Empty,
-                    Role = "Student"
+                    Role = "Examinator"
                 });
             }
         }
 
-        return students;
+        return examinators;
     }
 
-    public async Task<StudentDto?> GetStudentByIdAsync(string id)
+    public async Task<ExaminatorDto?> GetExaminatorByIdAsync(string id)
     {
         var user = await _userManager.FindByIdAsync(id);
         if (user == null) return null;
 
         var roles = await _userManager.GetRolesAsync(user);
-        if (!roles.Contains("Student")) return null;
+        if (!roles.Contains("Examinator")) return null;
 
-        return new StudentDto
+        return new ExaminatorDto
         {
             Id = user.Id.ToString(),
             Email = user.Email ?? string.Empty,
             UserName = user.UserName ?? string.Empty,
-            Role = "Student"
+            Role = "Examinator"
         };
     }
 
-    public async Task<CreateStudentResult> CreateStudentAsync(string email)
+    public async Task<CreateExaminatorResult> CreateExaminatorAsync(string email)
     {
         var existingUser = await _userManager.FindByEmailAsync(email);
         if (existingUser != null)
@@ -67,50 +67,50 @@ public class StudentService : IStudentService
 
         var generatedPassword = GenerateSecurePassword();
 
-        var student = new User
+        var examinator = new User
         {
             UserName = email,
             Email = email,
-            Role = UserRole.Student
+            Role = UserRole.Examinator
         };
 
-        var result = await _userManager.CreateAsync(student, generatedPassword);
+        var result = await _userManager.CreateAsync(examinator, generatedPassword);
         
         if (!result.Succeeded)
         {
             var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-            throw new InvalidOperationException($"Failed to create student: {errors}");
+            throw new InvalidOperationException($"Failed to create examinator: {errors}");
         }
 
-        await _userManager.AddToRoleAsync(student, UserRole.Student.ToString());
-        await _userManager.UpdateAsync(student);
+        await _userManager.AddToRoleAsync(examinator, UserRole.Examinator.ToString());
+        await _userManager.UpdateAsync(examinator);
 
-        _logger.LogInformation("Student created: {Email}", student.Email);
+        _logger.LogInformation("Examinator created: {Email}", examinator.Email);
 
-        return new CreateStudentResult
+        return new CreateExaminatorResult
         {
-            Id = student.Id.ToString(),
-            Email = student.Email ?? string.Empty,
-            UserName = student.UserName ?? string.Empty,
-            Role = student.Role.ToString(),
+            Id = examinator.Id.ToString(),
+            Email = examinator.Email ?? string.Empty,
+            UserName = examinator.UserName ?? string.Empty,
+            Role = examinator.Role.ToString(),
             TemporaryPassword = generatedPassword,
-            Message = "User created successfully. Please share this temporary password with the user securely."
+            Message = "Examinator created successfully. Please share this temporary password with the user securely."
         };
     }
 
-    public async Task<bool> DeleteStudentAsync(string id)
+    public async Task<bool> DeleteExaminatorAsync(string id)
     {
         var user = await _userManager.FindByIdAsync(id);
         if (user == null) return false;
 
         var roles = await _userManager.GetRolesAsync(user);
-        if (!roles.Contains("Student")) return false;
+        if (!roles.Contains("Examinator")) return false;
 
         var result = await _userManager.DeleteAsync(user);
 
         if (result.Succeeded)
         {
-            _logger.LogInformation("Student deleted: {Id}", id);
+            _logger.LogInformation("Examinator deleted: {Id}", id);
             return true;
         }
 

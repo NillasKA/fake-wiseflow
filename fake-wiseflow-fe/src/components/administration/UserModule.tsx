@@ -9,7 +9,8 @@ export type User = {
     role: string;
 };
 
-const API_URL = "https://localhost:7130/api/Student";
+const STUDENT_API = "https://localhost:7130/api/Student";
+const EXAMINATOR_API = "https://localhost:7130/api/Examinator";
 
 export default function UserModule() {
     const [users, setUsers] = useState<User[]>([]);
@@ -22,10 +23,21 @@ export default function UserModule() {
         setLoading(true);
         setError("");
         try {
-            const res = await fetch(`${API_URL}/all`, { credentials: "include" });
-            if (!res.ok) throw new Error("Failed to fetch users");
-            const data = await res.json();
-            setUsers(data);
+            // Fetch both students and examinators
+            const [studentsRes, examinatorsRes] = await Promise.all([
+                fetch(`${STUDENT_API}/all`, { credentials: "include" }),
+                fetch(`${EXAMINATOR_API}/all`, { credentials: "include" })
+            ]);
+
+            if (!studentsRes.ok || !examinatorsRes.ok) {
+                throw new Error("Failed to fetch users");
+            }
+
+            const students = await studentsRes.json();
+            const examinators = await examinatorsRes.json();
+
+            // Combine both arrays
+            setUsers([...students, ...examinators]);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Unknown error");
         } finally {
@@ -34,32 +46,17 @@ export default function UserModule() {
     }
 
     async function createUser(userData: { name: string; email: string; role: string }) {
-        const res = await fetch(`${API_URL}/create`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({
-                email: userData.email,
-                password: "" // Not needed anymore, but kept for compatibility
-            })
-        });
-
-        if (!res.ok) {
-            const error = await res.text();
-            throw new Error(error || "Failed to create user");
-        }
-
-        const result = await res.json();
-        await getAllUsers();
-        
-        return result; // Return the response containing temporaryPassword
+        // This function is no longer used since the modal handles API calls directly
+        // But kept for compatibility
+        return { temporaryPassword: "" };
     }
 
-    async function deleteUser(id: string) {
+    async function deleteUser(id: string, role: string) {
         if (!confirm("Er du sikker på at du vil slette denne bruger?")) return;
         
         try {
-            const res = await fetch(`${API_URL}/${id}`, {
+            const endpoint = role === "Student" ? STUDENT_API : EXAMINATOR_API;
+            const res = await fetch(`${endpoint}/${id}`, {
                 method: "DELETE",
                 credentials: "include"
             });
@@ -76,7 +73,8 @@ export default function UserModule() {
 
     const filtered = users.filter(u =>
         u.email.toLowerCase().includes(search.toLowerCase()) ||
-        u.userName.toLowerCase().includes(search.toLowerCase())
+        u.userName.toLowerCase().includes(search.toLowerCase()) ||
+        u.role.toLowerCase().includes(search.toLowerCase())
     );
 
     return (
@@ -126,7 +124,7 @@ export default function UserModule() {
                                     <td>
                                         <button 
                                             className="danger-btn" 
-                                            onClick={() => deleteUser(user.id)}
+                                            onClick={() => deleteUser(user.id, user.role)}
                                         >
                                             Slet
                                         </button>
@@ -144,7 +142,10 @@ export default function UserModule() {
 
             <UserModal
                 isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+                onClose={() => {
+                    setIsModalOpen(false);
+                    getAllUsers(); // Refresh the list when modal closes
+                }}
                 onSubmit={createUser}
             />
         </>

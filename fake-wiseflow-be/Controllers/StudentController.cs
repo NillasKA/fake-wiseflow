@@ -70,7 +70,3 @@ public class StudentController : ControllerBase
     }
 }
 
-public class CreateStudentRequest
-{
-    public string Email { get; set; } = default!;
-}

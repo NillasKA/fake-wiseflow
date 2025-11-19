@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "../../stylesheets/components/Modal.css";
+import "../../stylesheets/components/UserModal.css";
 
 interface UserModalProps {
     isOpen: boolean;
@@ -25,7 +26,31 @@ export default function UserModal({ isOpen, onClose, onSubmit }: UserModalProps)
         setGeneratedPassword("");
 
         try {
-            const result = await onSubmit({ name, email, role });
+            // Call the appropriate API endpoint based on role
+            const API_BASE = "https://localhost:7130/api";
+            let endpoint = "";
+            
+            if (role === "Student") {
+                endpoint = `${API_BASE}/Student/create`;
+            } else if (role === "Examinator") {
+                endpoint = `${API_BASE}/Examinator/create`;
+            } else {
+                throw new Error("Unsupported role selected");
+            }
+
+            const response = await fetch(endpoint, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ email })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || "Failed to create user");
+            }
+
+            const result = await response.json();
             
             if (result?.temporaryPassword) {
                 setGeneratedPassword(result.temporaryPassword);
@@ -45,6 +70,9 @@ export default function UserModal({ isOpen, onClose, onSubmit }: UserModalProps)
         setShowSuccess(false);
         setGeneratedPassword("");
         setError("");
+        setName("");
+        setEmail("");
+        setRole("Student");
         onClose();
     }
 
@@ -66,59 +94,25 @@ export default function UserModal({ isOpen, onClose, onSubmit }: UserModalProps)
                 {showSuccess ? (
                     <>
                         <div className="modal-body">
-                            <div style={{ 
-                                padding: "15px", 
-                                background: "#e8f5e9", 
-                                borderRadius: "4px",
-                                marginBottom: "15px" 
-                            }}>
-                                <p style={{ margin: "0 0 10px 0", fontWeight: "600", color: "#2e7d32" }}>
+                            <div className="success-container">
+                                <p className="success-title">
                                     ✓ Bruger oprettet succesfuldt!
                                 </p>
-                                <p style={{ margin: "0", fontSize: "14px", color: "#555" }}>
+                                <p className="success-message">
                                     Del denne midlertidige adgangskode sikkert med brugeren:
                                 </p>
                             </div>
 
-                            <div style={{
-                                display: "flex",
-                                gap: "10px",
-                                alignItems: "center",
-                                padding: "12px",
-                                background: "#f5f5f5",
-                                borderRadius: "4px",
-                                border: "2px solid #5a8fb0"
-                            }}>
-                                <code style={{ 
-                                    flex: 1, 
-                                    fontSize: "16px", 
-                                    fontWeight: "600",
-                                    letterSpacing: "1px"
-                                }}>
+                            <div className="password-container">
+                                <code className="password-code">
                                     {generatedPassword}
                                 </code>
-                                <button
-                                    onClick={copyToClipboard}
-                                    style={{
-                                        padding: "8px 12px",
-                                        background: "#5a8fb0",
-                                        color: "white",
-                                        border: "none",
-                                        borderRadius: "4px",
-                                        cursor: "pointer",
-                                        fontSize: "14px"
-                                    }}
-                                >
+                                <button onClick={copyToClipboard} className="copy-button">
                                     📋 Kopier
                                 </button>
                             </div>
 
-                            <p style={{ 
-                                marginTop: "15px", 
-                                fontSize: "12px", 
-                                color: "#666",
-                                fontStyle: "italic" 
-                            }}>
+                            <p className="password-warning">
                                 ⚠️ Denne adgangskode vises kun én gang. 
                                 Sørg for at gemme den før du lukker denne dialogboks.
                             </p>
@@ -127,9 +121,8 @@ export default function UserModal({ isOpen, onClose, onSubmit }: UserModalProps)
                         <div className="modal-footer">
                             <button
                                 type="button"
-                                className="btn-submit"
+                                className="btn-submit btn-full-width"
                                 onClick={handleClose}
-                                style={{ width: "100%" }}
                             >
                                 Færdig
                             </button>
@@ -175,17 +168,11 @@ export default function UserModal({ isOpen, onClose, onSubmit }: UserModalProps)
                                     disabled={loading}
                                 >
                                     <option value="Student">Student</option>
-                                    <option value="Examinator">Lærer</option>
-                                    <option value="InstitutionAdmin">Institution Admin</option>
+                                    <option value="Examinator">Eksaminator</option>
                                 </select>
                             </div>
 
-                            <p style={{ 
-                                fontSize: "12px", 
-                                color: "#666", 
-                                marginTop: "10px",
-                                fontStyle: "italic" 
-                            }}>
+                            <p className="password-hint">
                                 💡 En sikker adgangskode vil blive genereret automatisk
                             </p>
                         </div>
