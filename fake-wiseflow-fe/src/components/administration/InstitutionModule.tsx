@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import { useInstitutions } from "../../hooks/useInstitutions";
 import "../../stylesheets/components/InstitutionModule.css";
+import InstitutionPopup from "./InstitutionPopup";
+import PopupModal from "./PopupModal"
 
 export default function InstitutionModule() {
     const { institutions, loading, getAll, remove } = useInstitutions();
     const [search, setSearch] = useState("");
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         getAll();
@@ -15,6 +18,7 @@ export default function InstitutionModule() {
     );
 
     return (
+        <>
         <div className="module-card">
             <div className="module-header">
                 <div className="module-title">Institutioner</div>
@@ -28,12 +32,14 @@ export default function InstitutionModule() {
                         onChange={(e) => setSearch(e.target.value)}
                     />
 
-                    <button className="add-btn" onClick={() => alert("Mangler")}>Tilføj</button>
+                    <button className="add-btn" onClick={() => setIsModalOpen(true)}>
+                        Tilføj
+                    </button>
                 </div>
             </div>
 
             <table className="module-table">
-                <thead>
+            <thead>
                 <tr>
                     <th>ID</th>
                     <th>Navn</th>
@@ -64,5 +70,12 @@ export default function InstitutionModule() {
                 </tbody>
             </table>
         </div>
+        <PopupModal isOpen={isModalOpen} onClose={
+            () => {
+                setIsModalOpen(false);
+                getAll()}} header={"Opret Institution"}>
+            <InstitutionPopup />
+        </PopupModal>
+    </>
     );
 }

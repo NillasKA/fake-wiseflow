@@ -45,11 +45,6 @@ export default function UserModule() {
         }
     }
 
-    async function createUser(userData: { name: string; email: string; role: string }) {
-        // No longer used since Modal handles API calls directly. Still unsure which is better.
-        return { temporaryPassword: "" };
-    }
-
     async function deleteUser(id: string, role: string) {
         if (!confirm("Er du sikker på at du vil slette denne bruger?")) return;
         
@@ -145,7 +140,6 @@ export default function UserModule() {
                     setIsModalOpen(false);
                     getAllUsers(); // Refresh the list when modal closes
                 }}
-                onSubmit={createUser}
             />
         </>
     );
