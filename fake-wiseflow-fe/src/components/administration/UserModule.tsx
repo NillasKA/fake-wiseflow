@@ -46,8 +46,7 @@ export default function UserModule() {
     }
 
     async function createUser(userData: { name: string; email: string; role: string }) {
-        // This function is no longer used since the modal handles API calls directly
-        // But kept for compatibility
+        // No longer used since Modal handles API calls directly. Still unsure which is better.
         return { temporaryPassword: "" };
     }
 
