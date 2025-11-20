@@ -1,5 +1,5 @@
 export interface Evaluation {
-    id: number;
+    id: string;
     grade: number;
     comment: string;
     date: Date;

@@ -40,9 +40,10 @@ public class StudentService : IStudentService
         return students;
     }
 
-    public async Task<StudentDto?> GetStudentByIdAsync(string id)
+    public async Task<StudentDto?> GetStudentByIdAsync(Guid id)
     {
-        var user = await _userManager.FindByIdAsync(id);
+        var idString = id.ToString();
+        var user = await _userManager.FindByIdAsync(idString);
         if (user == null) return null;
 
         var roles = await _userManager.GetRolesAsync(user);
@@ -98,9 +99,10 @@ public class StudentService : IStudentService
         };
     }
 
-    public async Task<bool> DeleteStudentAsync(string id)
+    public async Task<bool> DeleteStudentAsync(Guid id)
     {
-        var user = await _userManager.FindByIdAsync(id);
+        var idString = id.ToString();
+        var user = await _userManager.FindByIdAsync(idString);
         if (user == null) return false;
 
         var roles = await _userManager.GetRolesAsync(user);

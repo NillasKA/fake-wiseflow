@@ -15,15 +15,15 @@ public class InstitutionService : IInstitutionService
     public async Task<List<Institution>> GetAllAsync() =>
         await _institutionRepository.GetAsync();
 
-    public async Task<Institution?> GetByIdAsync(int id) =>
+    public async Task<Institution?> GetByIdAsync(Guid id) =>
         await _institutionRepository.GetAsync(id);
 
     public async Task CreateAsync(Institution newInstitution) =>
         await _institutionRepository.CreateAsync(newInstitution);
 
-    public async Task UpdateAsync(int id, Institution updatedInstitution) =>
+    public async Task UpdateAsync(Guid id, Institution updatedInstitution) =>
         await _institutionRepository.UpdateAsync(id, updatedInstitution);
 
-    public async Task RemoveAsync(int id) =>
+    public async Task RemoveAsync(Guid id) =>
         await _institutionRepository.RemoveAsync(id);
 }

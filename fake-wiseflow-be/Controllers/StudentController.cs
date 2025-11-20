@@ -37,7 +37,7 @@ public class StudentController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetStudent(string id)
+    public async Task<IActionResult> GetStudent(Guid id)
     {
         var student = await _studentService.GetStudentByIdAsync(id);
 
@@ -57,7 +57,7 @@ public class StudentController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteStudent(string id)
+    public async Task<IActionResult> DeleteStudent(Guid id)
     {
         var success = await _studentService.DeleteStudentAsync(id);
 

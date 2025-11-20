@@ -18,7 +18,7 @@ public class ExamsController : ControllerBase
         await _examRepository.GetAsync();
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Exam>> Get(int id)
+    public async Task<ActionResult<Exam>> Get(Guid id)
     {
         var exam = await _examRepository.GetAsync(id);
 
@@ -39,7 +39,7 @@ public class ExamsController : ControllerBase
     }
 
     [HttpPut()]
-    public async Task<IActionResult> Update(int id, Exam updatedExam)
+    public async Task<IActionResult> Update(Guid id, Exam updatedExam)
     {
         var exam = await _examRepository.GetAsync(id);
 
@@ -56,7 +56,7 @@ public class ExamsController : ControllerBase
     }
 
     [HttpDelete()]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Delete(Guid id)
     {
         var exam = await _examRepository.GetAsync(id);
 

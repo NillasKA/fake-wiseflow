@@ -1,5 +1,5 @@
 export interface Submission {
-    id: number;
+    id: string;
     fileName: string;
     uploadDate: Date;
     status: string;

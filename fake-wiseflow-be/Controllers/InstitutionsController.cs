@@ -1,6 +1,5 @@
 ﻿using fake_wiseflow_be.Models;
 using fake_wiseflow_be.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace fake_wiseflow_be.Controllers;
@@ -24,7 +23,7 @@ public class InstitutionsController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Institution>> Get(int id)
+    public async Task<ActionResult<Institution>> Get(Guid id)
     {
         var institution = await _institutionService.GetByIdAsync(id);
 
@@ -45,7 +44,7 @@ public class InstitutionsController : ControllerBase
     }
 
     [HttpPut]
-    public async Task<IActionResult> Update(int id, Institution updatedInstitution)
+    public async Task<IActionResult> Update(Guid id, Institution updatedInstitution)
     {
         var institution = await _institutionService.GetByIdAsync(id);
 
@@ -62,7 +61,7 @@ public class InstitutionsController : ControllerBase
     }
 
     [HttpDelete]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Delete(Guid id)
     {
         var exam = await _institutionService.GetByIdAsync(id);
 
