@@ -5,10 +5,9 @@ import "../../stylesheets/components/UserModal.css";
 interface UserModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (userData: { name: string; email: string; role: string }) => Promise<{ temporaryPassword?: string }>;
 }
 
-export default function UserModal({ isOpen, onClose, onSubmit }: UserModalProps) {
+export default function UserModal({ isOpen, onClose }: UserModalProps) {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [role, setRole] = useState("Student");
