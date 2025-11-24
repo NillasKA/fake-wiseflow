@@ -25,15 +25,15 @@ public class InstitutionRepository : IInstitutionRepository
     public async Task<List<Institution>> GetAsync() =>
         await _institutionCollection.Find(_ => true).ToListAsync();
 
-    public async Task<Institution?> GetAsync(int id) =>
+    public async Task<Institution?> GetAsync(Guid id) =>
         await _institutionCollection.Find(x => x.id == id).FirstOrDefaultAsync();
 
     public async Task CreateAsync(Institution newInstitution) =>
         await _institutionCollection.InsertOneAsync(newInstitution);
 
-    public async Task UpdateAsync(int id, Institution updatedInstitution) =>
+    public async Task UpdateAsync(Guid id, Institution updatedInstitution) =>
         await _institutionCollection.ReplaceOneAsync(x => x.id == id, updatedInstitution);
 
-    public async Task RemoveAsync(int id) =>
+    public async Task RemoveAsync(Guid id) =>
         await _institutionCollection.DeleteOneAsync(x => x.id == id);
 }

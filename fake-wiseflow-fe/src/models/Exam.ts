@@ -1,7 +1,7 @@
 import type { Submission } from "./Submission";
 
 export interface Exam {
-    id: number;
+    id: string;
     title: string;
     date: Date;
     description: String;
