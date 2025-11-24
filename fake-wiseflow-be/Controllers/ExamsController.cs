@@ -1,7 +1,7 @@
 using fake_wiseflow_be.Models;
 using fake_wiseflow_be.Repositories;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Auhthorization;
+using Microsoft.AspNetCore.Authorization;
 
 namespace fake_wiseflow_be.Controllers;
 
@@ -32,7 +32,7 @@ public class ExamsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "InstitutionAdmin")]
+    //[Authorize(Roles = "InstitutionAdmin")]
     public async Task<IActionResult> Post(Exam newExam)
     {
         await _examRepository.CreateAsync(newExam);
