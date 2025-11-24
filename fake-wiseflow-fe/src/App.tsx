@@ -6,6 +6,7 @@ import HomePage from './pages/HomePage';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import AdminPage from "./pages/AdminPage.tsx";
+import CreateExam from "./pages/CreateExam.jsx";
 
 function App() {
 
