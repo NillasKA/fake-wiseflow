@@ -9,4 +9,6 @@ public class DatabaseSettings
     public string ExamsCollectionName => "Exams";
 
     public string InstitutionsCollectionName => "Institutions";
+
+    public string UsersCollectionName => "Users";
 }

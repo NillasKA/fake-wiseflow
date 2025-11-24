@@ -1,7 +1,7 @@
 import type { Exam } from "./Exam";
 
 export interface ExamCertificate {
-    id: number;
+    id: string;
     dateIssued: Date;
     exam: Exam;
 }

@@ -6,11 +6,11 @@ public interface IInstitutionService
 {
     Task<List<Institution>> GetAllAsync();
 
-    Task<Institution?> GetByIdAsync(int id);
+    Task<Institution?> GetByIdAsync(Guid id);
 
     Task CreateAsync(Institution newInstitution);
 
-    Task UpdateAsync(int id, Institution newInstitution);
+    Task UpdateAsync(Guid id, Institution newInstitution);
 
-    Task RemoveAsync(int id);
+    Task RemoveAsync(Guid id);
 }

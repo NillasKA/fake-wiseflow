@@ -6,12 +6,17 @@ using fake_wiseflow_be.DependencyInjection;
 using fake_wiseflow_be.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
 
 Env.Load();
 
 var builder = WebApplication.CreateBuilder(args)
     .ActivateServices()
     .ActivateRepositories();
+
+BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
 
 var allowedOrigins = new[]
 {
