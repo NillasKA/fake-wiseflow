@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useExams } from "../../hooks/UseExams";
+import { useExams } from "../../hooks/useExams";
 import "../../stylesheets/components/InstitutionModule.css";
 import ExamPopup from "./ExamPopup";
 import PopupModal from "./PopupModal"
