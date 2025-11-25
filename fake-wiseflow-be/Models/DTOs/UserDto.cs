@@ -7,6 +7,7 @@ public class StudentDto
     public string Email { get; set; } = default!;
     public string UserName { get; set; } = default!;
     public string Role { get; set; } = default!;
+    public Guid? InstitutionId { get; set; }
 }
 
 public class CreateStudentResult
@@ -17,11 +18,14 @@ public class CreateStudentResult
     public string Role { get; set; } = default!;
     public string TemporaryPassword { get; set; } = default!;
     public string Message { get; set; } = default!;
+    public Guid? InstitutionId { get; set; }
 }
 
 public class CreateStudentRequest
 {
     public string Email { get; set; } = default!;
+    public string UserName {get; set;} = default!;
+    public Guid? InstitutionId { get; set; }
 }
 
 // Examinator DTOs
@@ -31,6 +35,7 @@ public class ExaminatorDto
     public string Email { get; set; } = default!;
     public string UserName { get; set; } = default!;
     public string Role { get; set; } = default!;
+    public Guid? InstitutionId { get; set; }
 }
 
 public class CreateExaminatorResult
@@ -41,9 +46,13 @@ public class CreateExaminatorResult
     public string Role { get; set; } = default!;
     public string TemporaryPassword { get; set; } = default!;
     public string Message { get; set; } = default!;
+    public Guid? InstitutionId { get; set; }
 }
 
 public class CreateExaminatorRequest
 {
     public string Email { get; set; } = default!;
+    
+    public string UserName {get; set;} = default!;
+    public Guid? InstitutionId { get; set; }
 }

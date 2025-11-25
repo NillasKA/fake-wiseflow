@@ -27,7 +27,7 @@ public class StudentController : ControllerBase
 
         try
         {
-            var result = await _studentService.CreateStudentAsync(request.Email);
+            var result = await _studentService.CreateStudentAsync(request.Email, request.UserName, request.InstitutionId.Value);
             return Ok(result);
         }
         catch (InvalidOperationException ex)
@@ -53,6 +53,13 @@ public class StudentController : ControllerBase
     public async Task<IActionResult> GetAllStudents()
     {
         var students = await _studentService.GetAllStudentsAsync();
+        return Ok(students);
+    }
+
+    [HttpGet("institution/{institutionId}")]
+    public async Task<IActionResult> GetStudentsByInstitution(Guid institutionId)
+    {
+        var students = await _studentService.GetStudentsByInstitutionAsync(institutionId);
         return Ok(students);
     }
 

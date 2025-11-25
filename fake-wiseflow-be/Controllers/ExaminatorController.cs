@@ -27,7 +27,7 @@ public class ExaminatorController : ControllerBase
 
         try
         {
-            var result = await _examinatorService.CreateExaminatorAsync(request.Email);
+            var result = await _examinatorService.CreateExaminatorAsync(request.Email, request.UserName, request.InstitutionId.Value);
             return Ok(result);
         }
         catch (InvalidOperationException ex)
@@ -53,6 +53,13 @@ public class ExaminatorController : ControllerBase
     public async Task<IActionResult> GetAllExaminators()
     {
         var examinators = await _examinatorService.GetAllExaminatorsAsync();
+        return Ok(examinators);
+    }
+
+    [HttpGet("institution/{institutionId}")]
+    public async Task<IActionResult> GetExaminatorsByInstitution(Guid institutionId)
+    {
+        var examinators = await _examinatorService.GetExaminatorsByInstitutionAsync(institutionId);
         return Ok(examinators);
     }
 

@@ -5,9 +5,10 @@ import "../../stylesheets/components/UserModal.css";
 interface UserModalProps {
     isOpen: boolean;
     onClose: () => void;
+    institutionId?: string | null;
 }
 
-export default function UserModal({ isOpen, onClose }: UserModalProps) {
+export default function UserModal({ isOpen, onClose, institutionId }: UserModalProps) {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [role, setRole] = useState("Student");
@@ -25,7 +26,6 @@ export default function UserModal({ isOpen, onClose }: UserModalProps) {
         setGeneratedPassword("");
 
         try {
-            // Call the appropriate API endpoint based on role
             const API_BASE = "https://localhost:7130/api";
             let endpoint = "";
             
@@ -41,7 +41,11 @@ export default function UserModal({ isOpen, onClose }: UserModalProps) {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify({ email })
+                body: JSON.stringify({ 
+                    email,
+                    userName: name,
+                    institutionId
+                })
             });
 
             if (!response.ok) {
@@ -54,9 +58,6 @@ export default function UserModal({ isOpen, onClose }: UserModalProps) {
             if (result?.temporaryPassword) {
                 setGeneratedPassword(result.temporaryPassword);
                 setShowSuccess(true);
-                setName("");
-                setEmail("");
-                setRole("Student");
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to create user");

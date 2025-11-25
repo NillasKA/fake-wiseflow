@@ -6,6 +6,8 @@ public interface IExaminatorService
 {
     Task<List<ExaminatorDto>> GetAllExaminatorsAsync();
     Task<ExaminatorDto?> GetExaminatorByIdAsync(string id);
-    Task<CreateExaminatorResult> CreateExaminatorAsync(string email);
+    Task<CreateExaminatorResult> CreateExaminatorAsync(string email, string userName, Guid institutionId);
+    Task<List<ExaminatorDto>> GetExaminatorsByInstitutionAsync(Guid institutionId);
     Task<bool> DeleteExaminatorAsync(string id);
+
 }
