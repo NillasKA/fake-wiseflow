@@ -1,36 +1,41 @@
 ﻿import "../stylesheets/pages/LoginPage.css"
-import { useState } from "react";
-import { login, getMe } from "../api/auth";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { login as apiLogin, getMe } from "../api/auth";
 
-type Props = {
-    onLogin?: (user: unknown) => void;
-    verifyAfterLogin?: boolean;
-    redirectTo?: string;
-};
+export default function LoginPage() {
+    const { user, login: contextLogin } = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
 
-export default function LoginPage({ onLogin, verifyAfterLogin = true }: Props) {
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [error, setError] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (user) {
+            navigate("/");
+        }
+    }, [user, navigate]);
 
     async function handleSubmit(event: React.FormEvent) {
         event.preventDefault();
         setLoading(true);
 
         try {
-            await login({ email, password });
+            await apiLogin({ email, password });
 
-            let me = null;
-            if (verifyAfterLogin) {
-                me = await getMe();
-            }
+            const me = await getMe();
 
-            if (onLogin) {
-                onLogin(me || { email });
-            }
+            contextLogin(me);
+
+            const from = location.state?.from?.pathname || "/";
+            navigate(from, { replace: true });
+
         } catch (error: unknown) {
-            setError(error instanceof Error ? error.message : "Ukendt fejl. Kunne ikke logge ind.");
+            setError(error instanceof Error ? error.message : "Ukendt fejl.");
         } finally {
             setLoading(false);
         }
