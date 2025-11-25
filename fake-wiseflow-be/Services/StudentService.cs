@@ -32,7 +32,32 @@ public class StudentService : IStudentService
                     Id = user.Id.ToString(),
                     Email = user.Email ?? string.Empty,
                     UserName = user.UserName ?? string.Empty,
-                    Role = "Student"
+                    Role = "Student",
+                    InstitutionId = user.InstitutionId
+                });
+            }
+        }
+
+        return students;
+    }
+
+    public async Task<List<StudentDto>> GetStudentsByInstitutionAsync(Guid institutionId)
+    {
+        var allUsers = _userManager.Users.Where(u => u.InstitutionId == institutionId).ToList();
+        var students = new List<StudentDto>();
+
+        foreach (var user in allUsers)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.Contains("Student"))
+            {
+                students.Add(new StudentDto
+                {
+                    Id = user.Id.ToString(),
+                    Email = user.Email ?? string.Empty,
+                    UserName = user.UserName ?? string.Empty,
+                    Role = "Student",
+                    InstitutionId = user.InstitutionId
                 });
             }
         }
@@ -54,11 +79,12 @@ public class StudentService : IStudentService
             Id = user.Id.ToString(),
             Email = user.Email ?? string.Empty,
             UserName = user.UserName ?? string.Empty,
-            Role = "Student"
+            Role = "Student",
+            InstitutionId = user.InstitutionId
         };
     }
 
-    public async Task<CreateStudentResult> CreateStudentAsync(string email)
+    public async Task<CreateStudentResult> CreateStudentAsync(string email, Guid institutionId)
     {
         var existingUser = await _userManager.FindByEmailAsync(email);
         if (existingUser != null)
@@ -72,7 +98,8 @@ public class StudentService : IStudentService
         {
             UserName = email,
             Email = email,
-            Role = UserRole.Student
+            Role = UserRole.Student,
+            InstitutionId = institutionId
         };
 
         var result = await _userManager.CreateAsync(student, generatedPassword);
@@ -95,7 +122,8 @@ public class StudentService : IStudentService
             UserName = student.UserName ?? string.Empty,
             Role = student.Role.ToString(),
             TemporaryPassword = generatedPassword,
-            Message = "User created successfully. Please share this temporary password with the user securely."
+            Message = "User created successfully. Please share this temporary password with the user securely.",
+            InstitutionId = student.InstitutionId
         };
     }
 

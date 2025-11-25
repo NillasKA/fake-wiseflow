@@ -7,12 +7,18 @@ export type User = {
     email: string;
     userName: string;
     role: string;
+    institutionId?: string;
 };
 
 const STUDENT_API = "https://localhost:7130/api/Student";
 const EXAMINATOR_API = "https://localhost:7130/api/Examinator";
 
-export default function UserModule() {
+interface UserModuleProps {
+    institutionId?: string | null;
+    isSuperAdmin?: boolean;
+}
+
+export default function UserModule({ institutionId, isSuperAdmin }: UserModuleProps) {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState("");
@@ -23,10 +29,18 @@ export default function UserModule() {
         setLoading(true);
         setError("");
         try {
-            // Fetch both students and examinators
+            let studentsUrl = `${STUDENT_API}/all`;
+            let examinatorsUrl = `${EXAMINATOR_API}/all`;
+
+            // If institutionId is provided, fetch users for that institution
+            if (institutionId) {
+                studentsUrl = `${STUDENT_API}/institution/${institutionId}`;
+                examinatorsUrl = `${EXAMINATOR_API}/institution/${institutionId}`;
+            }
+
             const [studentsRes, examinatorsRes] = await Promise.all([
-                fetch(`${STUDENT_API}/all`, { credentials: "include" }),
-                fetch(`${EXAMINATOR_API}/all`, { credentials: "include" })
+                fetch(studentsUrl, { credentials: "include" }),
+                fetch(examinatorsUrl, { credentials: "include" })
             ]);
 
             if (!studentsRes.ok || !examinatorsRes.ok) {
@@ -36,7 +50,6 @@ export default function UserModule() {
             const students = await studentsRes.json();
             const examinators = await examinatorsRes.json();
 
-            // Combine both arrays
             setUsers([...students, ...examinators]);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Unknown error");
@@ -63,7 +76,7 @@ export default function UserModule() {
 
     useEffect(() => {
         getAllUsers();
-    }, []);
+    }, [institutionId]);
 
     const filtered = users.filter(u =>
         u.email.toLowerCase().includes(search.toLowerCase()) ||
@@ -71,11 +84,17 @@ export default function UserModule() {
         u.role.toLowerCase().includes(search.toLowerCase())
     );
 
+    // Determine if Add button should be disabled
+    const canAddUser = isSuperAdmin ? institutionId !== null : true;
+
     return (
         <>
             <div className="module-card">
                 <div className="module-header">
-                    <div className="module-title">Brugere</div>
+                    <div className="module-title">
+                        Brugere
+                        {institutionId && <span className="module-subtitle"> (Filtreret efter institution)</span>}
+                    </div>
 
                     <div className="module-controls">
                         <input
@@ -86,13 +105,24 @@ export default function UserModule() {
                             onChange={(e) => setSearch(e.target.value)}
                         />
 
-                        <button className="add-btn" onClick={() => setIsModalOpen(true)}>
+                        <button 
+                            className="add-btn" 
+                            onClick={() => setIsModalOpen(true)}
+                            disabled={!canAddUser}
+                            title={!canAddUser ? "Vælg en institution først" : ""}
+                        >
                             Tilføj
                         </button>
                     </div>
                 </div>
 
                 {error && <div className="module-error">{error}</div>}
+
+                {isSuperAdmin && !institutionId && (
+                    <div className="info-message">
+                        👈 Vælg en institution til venstre for at se brugere og oprette nye
+                    </div>
+                )}
 
                 <table className="module-table">
                     <thead>
@@ -127,7 +157,11 @@ export default function UserModule() {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan={4} className="center">Ingen brugere fundet</td>
+                                <td colSpan={4} className="center">
+                                    {institutionId 
+                                        ? "Ingen brugere fundet for denne institution" 
+                                        : "Ingen brugere fundet"}
+                                </td>
                             </tr>
                         )}
                     </tbody>
@@ -138,8 +172,9 @@ export default function UserModule() {
                 isOpen={isModalOpen}
                 onClose={() => {
                     setIsModalOpen(false);
-                    getAllUsers(); // Refresh the list when modal closes
+                    getAllUsers();
                 }}
+                institutionId={institutionId}
             />
         </>
     );

@@ -5,9 +5,10 @@ import "../../stylesheets/components/UserModal.css";
 interface UserModalProps {
     isOpen: boolean;
     onClose: () => void;
+    institutionId?: string | null;
 }
 
-export default function UserModal({ isOpen, onClose }: UserModalProps) {
+export default function UserModal({ isOpen, onClose, institutionId }: UserModalProps) {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [role, setRole] = useState("Student");
@@ -41,7 +42,7 @@ export default function UserModal({ isOpen, onClose }: UserModalProps) {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify({ email })
+                body: JSON.stringify({ email, institutionId})
             });
 
             if (!response.ok) {

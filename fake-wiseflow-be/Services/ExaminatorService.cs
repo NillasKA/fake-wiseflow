@@ -32,7 +32,32 @@ public class ExaminatorService : IExaminatorService
                     Id = user.Id.ToString(),
                     Email = user.Email ?? string.Empty,
                     UserName = user.UserName ?? string.Empty,
-                    Role = "Examinator"
+                    Role = "Examinator",
+                    InstitutionId = user.InstitutionId
+                });
+            }
+        }
+
+        return examinators;
+    }
+
+    public async Task<List<ExaminatorDto>> GetExaminatorsByInstitutionAsync(Guid institutionId)
+    {
+        var allUsers = _userManager.Users.Where(u => u.InstitutionId == institutionId).ToList();
+        var examinators = new List<ExaminatorDto>();
+
+        foreach (var user in allUsers)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.Contains("Examinator"))
+            {
+                examinators.Add(new ExaminatorDto
+                {
+                    Id = user.Id.ToString(),
+                    Email = user.Email ?? string.Empty,
+                    UserName = user.UserName ?? string.Empty,
+                    Role = "Examinator",
+                    InstitutionId = user.InstitutionId
                 });
             }
         }
@@ -53,11 +78,12 @@ public class ExaminatorService : IExaminatorService
             Id = user.Id.ToString(),
             Email = user.Email ?? string.Empty,
             UserName = user.UserName ?? string.Empty,
-            Role = "Examinator"
+            Role = "Examinator",
+            InstitutionId = user.InstitutionId
         };
     }
 
-    public async Task<CreateExaminatorResult> CreateExaminatorAsync(string email)
+    public async Task<CreateExaminatorResult> CreateExaminatorAsync(string email, Guid institutionId)
     {
         var existingUser = await _userManager.FindByEmailAsync(email);
         if (existingUser != null)
@@ -71,7 +97,8 @@ public class ExaminatorService : IExaminatorService
         {
             UserName = email,
             Email = email,
-            Role = UserRole.Examinator
+            Role = UserRole.Examinator,
+            InstitutionId = institutionId
         };
 
         var result = await _userManager.CreateAsync(examinator, generatedPassword);
@@ -94,7 +121,8 @@ public class ExaminatorService : IExaminatorService
             UserName = examinator.UserName ?? string.Empty,
             Role = examinator.Role.ToString(),
             TemporaryPassword = generatedPassword,
-            Message = "Examinator created successfully. Please share this temporary password with the user securely."
+            Message = "Examinator created successfully. Please share this temporary password with the user securely.",
+            InstitutionId = examinator.InstitutionId
         };
     }
 

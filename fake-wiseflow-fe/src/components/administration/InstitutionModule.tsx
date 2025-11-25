@@ -4,7 +4,12 @@ import "../../stylesheets/components/InstitutionModule.css";
 import InstitutionPopup from "./InstitutionPopup";
 import PopupModal from "./PopupModal"
 
-export default function InstitutionModule() {
+interface InstitutionModuleProps {
+    onInstitutionSelect?: (id: string | null) => void;
+    selectedInstitutionId?: string | null;
+}
+
+export default function InstitutionModule({ onInstitutionSelect, selectedInstitutionId }: InstitutionModuleProps) {
     const { institutions, loading, getAll, remove } = useInstitutions();
     const [search, setSearch] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -16,6 +21,16 @@ export default function InstitutionModule() {
     const filtered = institutions.filter(i =>
         i.name.toLowerCase().includes(search.toLowerCase())
     );
+
+    function handleInstitutionClick(id: number) {
+        const institutionId = id.toString();
+        // Toggle selection - if clicking the same one, deselect
+        if (selectedInstitutionId === institutionId) {
+            onInstitutionSelect?.(null);
+        } else {
+            onInstitutionSelect?.(institutionId);
+        }
+    }
 
     return (
         <>
@@ -54,10 +69,15 @@ export default function InstitutionModule() {
                     </tr>
                 ) : filtered.length ? (
                     filtered.map((i) => (
-                        <tr key={i.id}>
+                        <tr 
+                            key={i.id}
+                            className={selectedInstitutionId === i.id?.toString() ? "selected-row" : ""}
+                            onClick={() => handleInstitutionClick(i.id!)}
+                            style={{ cursor: "pointer" }}
+                        >
                             <td>{i.id}</td>
                             <td>{i.name}</td>
-                            <td>
+                            <td onClick={(e) => e.stopPropagation()}>
                                 <button className="danger-btn" onClick={() => remove(i.id!)}>Slet</button>
                             </td>
                         </tr>

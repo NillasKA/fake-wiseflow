@@ -26,6 +26,12 @@
     font-weight: 600;
 }
 
+.module-subtitle {
+    font-size: 12px;
+    font-weight: 400;
+    opacity: 0.9;
+}
+
 .module-controls {
     display: flex;
     align-items: center;
@@ -51,8 +57,13 @@
     cursor: pointer;
 }
 
-.add-btn:hover {
+.add-btn:hover:not(:disabled) {
     background: #eef4f7;
+}
+
+.add-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* Table */
@@ -77,6 +88,16 @@
 /* Zebra rows */
 .module-table tbody tr:nth-child(even) {
     background: #f8fbff;
+}
+
+/* Selected row highlight */
+.selected-row {
+    background: #e3f2fd !important;
+    border-left: 3px solid #5f869b;
+}
+
+.selected-row:hover {
+    background: #d1e7f7 !important;
 }
 
 /* Slet-knap */
@@ -105,4 +126,13 @@
     color: #b80000;
     background: #ffecec;
     border-bottom: 1px solid #f3b8b8;
+}
+
+/* Info message */
+.info-message {
+    padding: 12px 14px;
+    background: #e8f4f8;
+    color: #0c5460;
+    border-bottom: 1px solid #bee5eb;
+    font-size: 14px;
 }
