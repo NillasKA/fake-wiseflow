@@ -27,7 +27,7 @@ public class ExaminatorController : ControllerBase
 
         try
         {
-            var result = await _examinatorService.CreateExaminatorAsync(request.Email, request.InstitutionId.Value);
+            var result = await _examinatorService.CreateExaminatorAsync(request.Email, request.UserName, request.InstitutionId.Value);
             return Ok(result);
         }
         catch (InvalidOperationException ex)

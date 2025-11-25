@@ -24,12 +24,17 @@ export default function InstitutionModule({ onInstitutionSelect, selectedInstitu
 
     function handleInstitutionClick(id: number) {
         const institutionId = id.toString();
-        // Toggle selection - if clicking the same one, deselect
         if (selectedInstitutionId === institutionId) {
             onInstitutionSelect?.(null);
         } else {
             onInstitutionSelect?.(institutionId);
         }
+    }
+
+    function copyInstitutionId(id: number, e: React.MouseEvent) {
+        e.stopPropagation();
+        navigator.clipboard.writeText(id.toString());
+        alert("Institution ID kopieret til udklipsholder!");
     }
 
     return (
@@ -56,8 +61,8 @@ export default function InstitutionModule({ onInstitutionSelect, selectedInstitu
             <table className="module-table">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Navn</th>
+                    <th>ID</th>
                     <th>Handling</th>
                 </tr>
                 </thead>
@@ -75,8 +80,16 @@ export default function InstitutionModule({ onInstitutionSelect, selectedInstitu
                             onClick={() => handleInstitutionClick(i.id!)}
                             style={{ cursor: "pointer" }}
                         >
-                            <td>{i.id}</td>
                             <td>{i.name}</td>
+                            <td onClick={(e) => e.stopPropagation()}>
+                                <button 
+                                    className="copy-id-btn" 
+                                    onClick={(e) => copyInstitutionId(i.id!, e)}
+                                    title="Kopier ID"
+                                >
+                                    📋 Kopier ID
+                                </button>
+                            </td>
                             <td onClick={(e) => e.stopPropagation()}>
                                 <button className="danger-btn" onClick={() => remove(i.id!)}>Slet</button>
                             </td>

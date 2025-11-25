@@ -27,7 +27,7 @@ public class StudentController : ControllerBase
 
         try
         {
-            var result = await _studentService.CreateStudentAsync(request.Email, request.InstitutionId.Value);
+            var result = await _studentService.CreateStudentAsync(request.Email, request.UserName, request.InstitutionId.Value);
             return Ok(result);
         }
         catch (InvalidOperationException ex)

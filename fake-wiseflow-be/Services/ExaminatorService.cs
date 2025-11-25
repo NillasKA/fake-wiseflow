@@ -83,7 +83,7 @@ public class ExaminatorService : IExaminatorService
         };
     }
 
-    public async Task<CreateExaminatorResult> CreateExaminatorAsync(string email, Guid institutionId)
+    public async Task<CreateExaminatorResult> CreateExaminatorAsync(string email, string userName, Guid institutionId)
     {
         var existingUser = await _userManager.FindByEmailAsync(email);
         if (existingUser != null)
@@ -95,7 +95,7 @@ public class ExaminatorService : IExaminatorService
 
         var examinator = new User
         {
-            UserName = email,
+            UserName = userName,
             Email = email,
             Role = UserRole.Examinator,
             InstitutionId = institutionId
@@ -112,7 +112,7 @@ public class ExaminatorService : IExaminatorService
         await _userManager.AddToRoleAsync(examinator, UserRole.Examinator.ToString());
         await _userManager.UpdateAsync(examinator);
 
-        _logger.LogInformation("Examinator created: {Email}", examinator.Email);
+        _logger.LogInformation("Examinator created: {Email} with username {UserName}", examinator.Email, examinator.UserName);
 
         return new CreateExaminatorResult
         {

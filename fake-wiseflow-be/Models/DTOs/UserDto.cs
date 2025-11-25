@@ -24,6 +24,7 @@ public class CreateStudentResult
 public class CreateStudentRequest
 {
     public string Email { get; set; } = default!;
+    public string UserName {get; set;} = default!;
     public Guid? InstitutionId { get; set; }
 }
 
@@ -51,5 +52,7 @@ public class CreateExaminatorResult
 public class CreateExaminatorRequest
 {
     public string Email { get; set; } = default!;
+    
+    public string UserName {get; set;} = default!;
     public Guid? InstitutionId { get; set; }
 }

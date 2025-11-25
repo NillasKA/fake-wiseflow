@@ -84,7 +84,7 @@ public class StudentService : IStudentService
         };
     }
 
-    public async Task<CreateStudentResult> CreateStudentAsync(string email, Guid institutionId)
+    public async Task<CreateStudentResult> CreateStudentAsync(string email, string userName, Guid institutionId)
     {
         var existingUser = await _userManager.FindByEmailAsync(email);
         if (existingUser != null)
@@ -96,7 +96,7 @@ public class StudentService : IStudentService
 
         var student = new User
         {
-            UserName = email,
+            UserName = userName,
             Email = email,
             Role = UserRole.Student,
             InstitutionId = institutionId
@@ -113,7 +113,7 @@ public class StudentService : IStudentService
         await _userManager.AddToRoleAsync(student, UserRole.Student.ToString());
         await _userManager.UpdateAsync(student);
 
-        _logger.LogInformation("Student created: {Email}", student.Email);
+        _logger.LogInformation("Student created: {Email} with username {UserName}", student.Email, student.UserName);
 
         return new CreateStudentResult
         {

@@ -66,6 +66,25 @@
     cursor: not-allowed;
 }
 
+/* Copy ID button */
+.copy-id-btn {
+    background: #5f869b;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.copy-id-btn:hover {
+    background: #4a7a95;
+}
+
+.copy-id-btn:active {
+    transform: translateY(1px);
+}
+
 /* Table */
 .module-table {
     width: 100%;

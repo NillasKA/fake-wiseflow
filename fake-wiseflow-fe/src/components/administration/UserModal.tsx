@@ -26,7 +26,6 @@ export default function UserModal({ isOpen, onClose, institutionId }: UserModalP
         setGeneratedPassword("");
 
         try {
-            // Call the appropriate API endpoint based on role
             const API_BASE = "https://localhost:7130/api";
             let endpoint = "";
             
@@ -42,7 +41,11 @@ export default function UserModal({ isOpen, onClose, institutionId }: UserModalP
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify({ email, institutionId})
+                body: JSON.stringify({ 
+                    email,
+                    userName: name,
+                    institutionId
+                })
             });
 
             if (!response.ok) {
@@ -55,9 +58,6 @@ export default function UserModal({ isOpen, onClose, institutionId }: UserModalP
             if (result?.temporaryPassword) {
                 setGeneratedPassword(result.temporaryPassword);
                 setShowSuccess(true);
-                setName("");
-                setEmail("");
-                setRole("Student");
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to create user");
