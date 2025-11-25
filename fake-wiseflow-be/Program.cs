@@ -34,33 +34,42 @@ builder.Services.AddCors(opt =>
             .AllowCredentials());
 });
 
-// Program.cs
-
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
-    {
-        // 1. Prevent Redirect to "/Account/Login" on 401
-        options.Events.OnRedirectToLogin = context =>
-        {
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            return Task.CompletedTask;
-        };
-
-        options.Events.OnRedirectToAccessDenied = context =>
-        {
-            context.Response.StatusCode = StatusCodes.Status403Forbidden;
-            return Task.CompletedTask;
-        };
-        
-        options.Cookie.HttpOnly = true;
-        options.Cookie.SameSite = SameSiteMode.None;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-    });
-
+// 1. DATABASE SETTINGS (Move this up so it's ready for Identity)
 builder.Services.Configure<DatabaseSettings>(
     builder.Configuration.GetSection("fake-wiseflow-db"));
-
 var dbConfig = builder.Configuration.GetSection("fake-wiseflow-db").Get<DatabaseSettings>()!;
+
+// 2. ADD IDENTITY FIRST
+// This registers the services and sets the default cookie settings (which we will override next)
+builder.Services.AddIdentityMongoDbProvider<User>(
+    mongo => mongo.ConnectionString = dbConfig.ConnectionString);
+
+// 3. CONFIGURE THE IDENTITY COOKIE (The Fix)
+// This overrides the defaults set by step 2.
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    // Prevent Redirect to "/Account/Login" on 401
+    options.Events.OnRedirectToLogin = context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        return Task.CompletedTask;
+    };
+
+    // Prevent Redirect to "/Account/AccessDenied" on 403
+    options.Events.OnRedirectToAccessDenied = context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+        return Task.CompletedTask;
+    };
+
+    // Cookie Settings
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.None; // Essential for cross-site/port
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; 
+});
+
+// Note: I removed the manual "builder.Services.AddAuthentication..." block 
+// because Identity handles that internally.
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -70,13 +79,10 @@ builder.Services.AddSwaggerGen(c =>
     {
         Type = SecuritySchemeType.ApiKey,
         In = ParameterLocation.Cookie,
-        Name = ".AspNetCore.Identity.Application",
+        Name = ".AspNetCore.Identity.Application", // This is the default Identity cookie name
         Description = "Cookie auth. First POST /api/auth/login to get the auth cookie."
     });
 });
-
-builder.Services.AddIdentityMongoDbProvider<User>(
-    mongo => mongo.ConnectionString = dbConfig.ConnectionString);
 
 var app = builder.Build();
 
