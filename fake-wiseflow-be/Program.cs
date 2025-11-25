@@ -4,6 +4,7 @@ using DotNetEnv;
 using fake_wiseflow_be.Data;
 using fake_wiseflow_be.DependencyInjection;
 using fake_wiseflow_be.Models;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
 using MongoDB.Bson;
@@ -32,6 +33,29 @@ builder.Services.AddCors(opt =>
             .AllowAnyMethod()
             .AllowCredentials());
 });
+
+// Program.cs
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        // 1. Prevent Redirect to "/Account/Login" on 401
+        options.Events.OnRedirectToLogin = context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return Task.CompletedTask;
+        };
+
+        options.Events.OnRedirectToAccessDenied = context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            return Task.CompletedTask;
+        };
+        
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.None;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    });
 
 builder.Services.Configure<DatabaseSettings>(
     builder.Configuration.GetSection("fake-wiseflow-db"));
