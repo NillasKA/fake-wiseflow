@@ -37,7 +37,16 @@ public class AuthController : ControllerBase
     {
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
 
-        var result = await _signIn.PasswordSignInAsync(dto.Email, dto.Password,
+        
+        var user = await _users.FindByEmailAsync(dto.Email);
+        if (user == null)
+        {
+            
+            return Unauthorized(new { message = "Invalid credentials" });
+        }
+
+        
+        var result = await _signIn.PasswordSignInAsync(user.UserName, dto.Password,
             isPersistent: true, lockoutOnFailure: true);
 
         if (!result.Succeeded) return Unauthorized(new { message = "Invalid credentials" });
