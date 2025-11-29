@@ -9,11 +9,16 @@ namespace fake_wiseflow_be.Services;
 public class ExaminatorService : IExaminatorService
 {
     private readonly UserManager<User> _userManager;
+    private readonly IPasswordGeneratorService _passwordGeneratorService;
     private readonly ILogger<ExaminatorService> _logger;
 
-    public ExaminatorService(UserManager<User> userManager, ILogger<ExaminatorService> logger)
+    public ExaminatorService(
+        UserManager<User> userManager,
+        IPasswordGeneratorService passwordGeneratorService,
+        ILogger<ExaminatorService> logger)
     {
         _userManager = userManager;
+        _passwordGeneratorService = passwordGeneratorService;
         _logger = logger;
     }
 
@@ -91,7 +96,7 @@ public class ExaminatorService : IExaminatorService
             throw new InvalidOperationException("A user with this email already exists.");
         }
 
-        var generatedPassword = GenerateSecurePassword();
+        var generatedPassword = await _passwordGeneratorService.GenerateSecurePassword();
 
         var examinator = new User
         {
@@ -143,24 +148,5 @@ public class ExaminatorService : IExaminatorService
         }
 
         return false;
-    }
-
-    private static string GenerateSecurePassword(int length = 12)
-    {
-        const string validChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*";
-        var password = new StringBuilder();
-
-        using (var rng = RandomNumberGenerator.Create())
-        {
-            var buffer = new byte[length];
-            rng.GetBytes(buffer);
-
-            foreach (var b in buffer)
-            {
-                password.Append(validChars[b % validChars.Length]);
-            }
-        }
-
-        return password.ToString();
     }
 }
