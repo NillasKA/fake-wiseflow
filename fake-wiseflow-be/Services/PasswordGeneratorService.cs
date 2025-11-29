@@ -3,7 +3,7 @@ namespace fake_wiseflow_be.Services;
 using System.Security.Cryptography;
 using System.Text;
 
-public class PswGeneratorService : IPswGeneratorService
+public class PasswordGeneratorService : IPasswordGeneratorService
 {
     private const string Uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private const string Lowercase = "abcdefghijklmnopqrstuvwxyz";

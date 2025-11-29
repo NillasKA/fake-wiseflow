@@ -10,11 +10,16 @@ namespace fake_wiseflow_be.Services;
 public class StudentService : IStudentService
 {
     private readonly UserManager<User> _userManager;
+    private readonly IPasswordGeneratorService _passwordGeneratorService;
     private readonly ILogger<StudentService> _logger;
 
-    public StudentService(UserManager<User> userManager, ILogger<StudentService> logger)
+    public StudentService(
+        UserManager<User> userManager,
+        IPasswordGeneratorService passwordGeneratorService,
+        ILogger<StudentService> logger)
     {
         _userManager = userManager;
+        _passwordGeneratorService = passwordGeneratorService;
         _logger = logger;
     }
 
@@ -93,7 +98,7 @@ public class StudentService : IStudentService
             throw new InvalidOperationException("A user with this email already exists.");
         }
 
-        var generatedPassword = await new PswGeneratorService().GenerateSecurePassword();
+        var generatedPassword = await _passwordGeneratorService.GenerateSecurePassword();
 
         var student = new User
         {
