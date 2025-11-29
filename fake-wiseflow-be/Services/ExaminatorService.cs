@@ -91,7 +91,7 @@ public class ExaminatorService : IExaminatorService
             throw new InvalidOperationException("A user with this email already exists.");
         }
 
-        var generatedPassword = GenerateSecurePassword();
+        var generatedPassword = await new PswGeneratorService().GenerateSecurePassword();
 
         var examinator = new User
         {
@@ -145,6 +145,7 @@ public class ExaminatorService : IExaminatorService
         return false;
     }
 
+    /*
     private static string GenerateSecurePassword(int length = 12)
     {
         if (length < 8)
@@ -191,4 +192,5 @@ public class ExaminatorService : IExaminatorService
         }
         return new string(array);
     }
+    */
 }

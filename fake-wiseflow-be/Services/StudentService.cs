@@ -3,6 +3,7 @@ using System.Text;
 using fake_wiseflow_be.Models;
 using fake_wiseflow_be.Models.DTOs;
 using Microsoft.AspNetCore.Identity;
+using fake_wiseflow_be.Services;
 
 namespace fake_wiseflow_be.Services;
 
@@ -92,7 +93,7 @@ public class StudentService : IStudentService
             throw new InvalidOperationException("A user with this email already exists.");
         }
 
-        var generatedPassword = GenerateSecurePassword();
+        var generatedPassword = await new PswGeneratorService().GenerateSecurePassword();
 
         var student = new User
         {
@@ -147,6 +148,7 @@ public class StudentService : IStudentService
         return false;
     }
 
+    /*
     private static string GenerateSecurePassword(int length = 12)
     {
         if (length < 8)
@@ -193,4 +195,5 @@ public class StudentService : IStudentService
         }
         return new string(array);
     }
-}
+    */
+} 
