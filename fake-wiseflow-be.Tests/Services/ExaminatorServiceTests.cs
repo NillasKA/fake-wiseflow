@@ -1,8 +1,6 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using fake_wiseflow_be.Services;
 using fake_wiseflow_be.Models;
-using fake_wiseflow_be.Models.DTOs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
@@ -13,6 +11,7 @@ namespace fake_wiseflow_be.Tests.Services
     public class ExaminatorServiceTests
     {
         private Mock<UserManager<User>> _mockUserManager;
+        private Mock<IPasswordGeneratorService> _mockPasswordGeneratorService;
         private Mock<ILogger<ExaminatorService>> _mockLogger;
         private ExaminatorService _service;
 
@@ -20,10 +19,11 @@ namespace fake_wiseflow_be.Tests.Services
         public void Setup()
         {
             var userStoreMock = new Mock<IUserStore<User>>();
-            _mockUserManager = new Mock<UserManager<User>>(
-                userStoreMock.Object, null, null, null, null, null, null, null, null);
+            _mockUserManager = new Mock<UserManager<User>>(userStoreMock.Object, null, null, null, null, null, null, null, null);
             _mockLogger = new Mock<ILogger<ExaminatorService>>();
-            _service = new ExaminatorService(_mockUserManager.Object, _mockLogger.Object);
+            _mockPasswordGeneratorService = new Mock<IPasswordGeneratorService>();
+            
+            _service = new ExaminatorService(_mockUserManager.Object, _mockPasswordGeneratorService.Object, _mockLogger.Object);
         }
 
         [TestMethod]

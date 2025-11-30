@@ -1,8 +1,6 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using fake_wiseflow_be.Services;
 using fake_wiseflow_be.Models;
-using fake_wiseflow_be.Models.DTOs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
@@ -13,6 +11,7 @@ namespace fake_wiseflow_be.Tests.Services
     public class StudentServiceTests
     {
         private Mock<UserManager<User>> _mockUserManager;
+        private Mock<IPasswordGeneratorService> _mockPasswordGeneratorService;
         private Mock<ILogger<StudentService>> _mockLogger;
         private StudentService _service;
 
@@ -23,7 +22,7 @@ namespace fake_wiseflow_be.Tests.Services
             _mockUserManager = new Mock<UserManager<User>>(
                 userStoreMock.Object, null, null, null, null, null, null, null, null);
             _mockLogger = new Mock<ILogger<StudentService>>();
-            _service = new StudentService(_mockUserManager.Object, _mockLogger.Object);
+            _service = new StudentService(_mockUserManager.Object, _mockPasswordGeneratorService.Object, _mockLogger.Object);
         }
 
         [TestMethod]
