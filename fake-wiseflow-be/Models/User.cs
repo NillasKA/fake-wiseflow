@@ -1,15 +1,32 @@
 using AspNetCore.Identity.Mongo.Model;
-using Microsoft.AspNetCore.Identity;
-using MongoDB.Driver;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace fake_wiseflow_be.Models;
 
-public class User : MongoUser
+// 1. Your User Class
+public class User : MongoUser<Guid>
 {
     public UserRole Role { get; set; }
-
     public Guid? InstitutionId { get; set; }
 
+    public User()
+    {
+        Id = Guid.NewGuid();
+    }
+}
+
+public class Role : MongoRole<Guid>
+{
+    public Role()
+    {
+        Id = Guid.NewGuid();
+    }
+
+    public Role(string roleName) : base(roleName)
+    {
+        Id = Guid.NewGuid();
+    }
 }
 
 public enum UserRole

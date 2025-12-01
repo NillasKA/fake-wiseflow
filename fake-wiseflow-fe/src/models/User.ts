@@ -1,3 +1,7 @@
 export interface User {
-    //TODO: Vent på at vi ved hvilke ting vi skal bruge fra useren på backenden.
+    id: string;
+    email: string;
+    userName: string;
+    role: string;
+    institutionId?: string;
 }

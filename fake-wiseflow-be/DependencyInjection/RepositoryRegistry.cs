@@ -9,6 +9,8 @@ public static class RepositoryRegistry
         //TODO: Lav Interface til ExamRepository
         builder.Services.AddScoped<ExamRepository>();
         builder.Services.AddScoped<IInstitutionRepository, InstitutionRepository>();
+        builder.Services.AddScoped<ISubmissionRepository, SubmissionRepository>();
+        
         return builder;
     }
 }
