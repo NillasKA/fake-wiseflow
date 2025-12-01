@@ -6,5 +6,9 @@ public class DatabaseSettings
 
     public string DatabaseName { get; set; } = default!;
     
-    public string ExamsCollectionName { get; set; } = "Exams";
+    public string ExamsCollectionName => "Exams";
+
+    public string InstitutionsCollectionName => "Institutions";
+
+    public string UsersCollectionName => "Users";
 }

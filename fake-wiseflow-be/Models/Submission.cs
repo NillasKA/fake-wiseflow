@@ -5,7 +5,7 @@ namespace fake_wiseflow_be.Models;
 public class Submission
 {
     [BsonId]
-    public int id { get; set; }
+    public Guid id { get; set; } = Guid.NewGuid();
     
     [BsonElement("fileName")]
     public string fileName { get; set; }

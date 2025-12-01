@@ -2,32 +2,79 @@ using AspNetCore.Identity.Mongo;
 using AspNetCore.Identity.Mongo.Model;
 using DotNetEnv;
 using fake_wiseflow_be.Data;
+using fake_wiseflow_be.DependencyInjection;
 using fake_wiseflow_be.Models;
-using fake_wiseflow_be.Repositories;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.OpenApi.Models;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
 
 Env.Load();
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args)
+    .ActivateServices()
+    .ActivateRepositories();
 
-// bind settings
+BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
+
+var allowedOrigins = new[]
+{
+    "http://localhost:5173", "https://localhost:5173",
+    "http://localhost:3000", "https://localhost:3000"
+};
+
+builder.Services.AddCors(opt =>
+{
+    opt.AddPolicy("frontend", policy =>
+        policy.WithOrigins(allowedOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials());
+});
+
 builder.Services.Configure<DatabaseSettings>(
     builder.Configuration.GetSection("fake-wiseflow-db"));
-
 var dbConfig = builder.Configuration.GetSection("fake-wiseflow-db").Get<DatabaseSettings>()!;
-
-builder.Services.AddSingleton<ExamRepository>();
-
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 builder.Services.AddIdentityMongoDbProvider<User>(
     mongo => mongo.ConnectionString = dbConfig.ConnectionString);
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Events.OnRedirectToLogin = context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        return Task.CompletedTask;
+    };
+
+    options.Events.OnRedirectToAccessDenied = context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+        return Task.CompletedTask;
+    };
+
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; 
+});
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.AddSecurityDefinition("cookieAuth", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.ApiKey,
+        In = ParameterLocation.Cookie,
+        Name = ".AspNetCore.Identity.Application",
+        Description = "Cookie auth. First POST /api/auth/login to get the auth cookie."
+    });
+});
+
 var app = builder.Build();
 
-app.Lifetime.ApplicationStarted.Register(async () =>
+app.Lifetime.ApplicationStarted.Register(async void () =>
 {
     using var scope = app.Services.CreateScope();
     var roleMgr = scope.ServiceProvider.GetRequiredService<RoleManager<MongoRole>>();
@@ -45,7 +92,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("frontend");
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
-
 app.Run();
-Console.WriteLine($"Loaded connection: {Environment.GetEnvironmentVariable("fake-wiseflow-db__ConnectionString")}");

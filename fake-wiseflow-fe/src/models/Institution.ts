@@ -1,4 +1,4 @@
 export interface Institution {
-    id: number;
+    id: string;
     name: string;
 }
