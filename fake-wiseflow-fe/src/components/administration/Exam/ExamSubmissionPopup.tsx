@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import { useStudents } from "../../../hooks/useStudents";
 import { useSubmissions } from "../../../hooks/useSubmissions";
 import { useAuth } from "../../../hooks/useAuth";
-import {useExams} from "../../../hooks/useExams.ts";
+import { useExams } from "../../../hooks/useExams.ts";
+import "../../../stylesheets/components/Modal.css";
+import "../../../stylesheets/components/ExamSubmissionPopup.css";
 
 // @ts-ignore
 export default function ExamSubmissionPopup({ examId, onClose }) {
@@ -53,14 +55,13 @@ export default function ExamSubmissionPopup({ examId, onClose }) {
         setLoading(true);
 
         try {
-            // Create submission objects for each selected student
             const newSubmissions = selectedStudentIds.map(userId => ({
                 userId,
                 examId
             }));
 
             if (newSubmissions.length === 0) {
-                setError("Please select at least one student");
+                setError("Vælg mindst én studerende");
                 setLoading(false);
                 return;
             }
@@ -68,7 +69,7 @@ export default function ExamSubmissionPopup({ examId, onClose }) {
             await createBulk(examId, newSubmissions);
             setShowSuccess(true);
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Failed to create submissions");
+            setError(err instanceof Error ? err.message : "Kunne ikke oprette afleveringer");
         } finally {
             setLoading(false);
         }
@@ -86,16 +87,16 @@ export default function ExamSubmissionPopup({ examId, onClose }) {
                     </div>
                 </div>
             ) : (
-                <div>
-                    <form onSubmit={handleSubmit}>
-                        <div className="modal-body">
-                            {error && <div className="modal-error">{error}</div>}
+                <form onSubmit={handleSubmit}>
+                    <div className="modal-body">
+                        {error && <div className="modal-error">{error}</div>}
 
-                            <h3>Nuværende afleveringer</h3>
+                        <div className="submission-section">
+                            <h3 className="section-title">Nuværende afleveringer</h3>
                             {submissionsLoading ? (
-                                <p>Loading submissions...</p>
+                                <p className="loading-text">Henter afleveringer...</p>
                             ) : submissions.length === 0 ? (
-                                <p>Ingen afleveringer endnu</p>
+                                <p className="info-text">Ingen afleveringer endnu</p>
                             ) : (
                                 <ul className="submissions-list">
                                     {submissions.map(submission => {
@@ -103,18 +104,20 @@ export default function ExamSubmissionPopup({ examId, onClose }) {
 
                                         return (
                                             <li key={submission.id} className="submission-item">
-                                                {student ? `${student.userName}` : 'Unknown student'}
+                                                {student ? `${student.userName}` : 'Ukendt studerende'}
                                             </li>
                                         );
                                     })}
                                 </ul>
                             )}
+                        </div>
 
-                            <h3>Tilføj nye studerende til denne eksamen</h3>
+                        <div className="submission-section">
+                            <h3 className="section-title">Tilføj nye studerende til denne eksamen</h3>
                             {studentsLoading ? (
-                                <p>Loading students...</p>
+                                <p className="loading-text">Henter studerende...</p>
                             ) : availableStudents.length === 0 ? (
-                                <p>Alle studerende er allerede tilføjet</p>
+                                <p className="info-text">Alle studerende er allerede tilføjet</p>
                             ) : (
                                 <div className="students-selection">
                                     {availableStudents.map(student => (
@@ -134,26 +137,26 @@ export default function ExamSubmissionPopup({ examId, onClose }) {
                                 </div>
                             )}
                         </div>
+                    </div>
 
-                        <div className="modal-footer">
-                            <button
-                                type="submit"
-                                className="btn primary-btn"
-                                disabled={loading || selectedStudentIds.length === 0}
-                            >
-                                {loading ? "Opretter..." : "Opret afleveringer"}
-                            </button>
-                            <button
-                                type="button"
-                                className="btn secondary-btn"
-                                onClick={onClose}
-                                disabled={loading}
-                            >
-                                Annuller
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    <div className="modal-footer">
+                        <button
+                            type="button"
+                            className="btn-cancel"
+                            onClick={onClose}
+                            disabled={loading}
+                        >
+                            Annuller
+                        </button>
+                        <button
+                            type="submit"
+                            className="btn-submit"
+                            disabled={loading || selectedStudentIds.length === 0}
+                        >
+                            {loading ? "Opretter..." : "Opret afleveringer"}
+                        </button>
+                    </div>
+                </form>
             )}
         </>
     );
