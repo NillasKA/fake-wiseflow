@@ -119,6 +119,25 @@
     background: #d1e7f7 !important;
 }
 
+/* Primary button */
+.primary-btn {
+    background: #5f869b;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.primary-btn:hover {
+    background: #4a7a95;
+}
+
+.primary-btn:active {
+    transform: translateY(1px);
+}
+
 /* Slet-knap */
 .danger-btn {
     background: #d9534f;

@@ -7,17 +7,15 @@ public class Submission
     [BsonId]
     public Guid id { get; set; } = Guid.NewGuid();
     
-    [BsonElement("fileName")]
-    public string fileName { get; set; }
+    public Guid? evaluationId { get; set; }
     
-    [BsonElement("uploadDate")]
-    public DateTime uploadDate { get; set; }
+    public Guid userId { get; set; }
     
-    [BsonElement("evaluation")]
-    public Evaluation? evaluation { get; set; }
+    public string? filePath { get; set; }
     
-    [BsonElement("status")]
-    public SubmissionStatus status { get; set; }
+    public DateTime? uploadDate { get; set; }
+    
+    public SubmissionStatus status { get; set; } = SubmissionStatus.Pending;
 }
 
 public enum SubmissionStatus
@@ -26,3 +24,4 @@ public enum SubmissionStatus
     Graded,
     Returned
 }
+    
