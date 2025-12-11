@@ -3,6 +3,7 @@ import { useStudents } from "../../../hooks/useStudents";
 import { useSubmissions } from "../../../hooks/useSubmissions";
 import { useAuth } from "../../../hooks/useAuth";
 import { useExams } from "../../../hooks/useExams.ts";
+import { useExaminators } from "../../../hooks/useExaminators.ts";
 import "../../../stylesheets/components/Modal.css";
 import "../../../stylesheets/components/ExamSubmissionPopup.css";
 
@@ -10,10 +11,12 @@ import "../../../stylesheets/components/ExamSubmissionPopup.css";
 export default function ExamSubmissionPopup({ examId, onClose }) {
     const { users, loading: studentsLoading, getAllByInstitutionId } = useStudents();
     const { submissions, loading: submissionsLoading, getByExamId, createBulk } = useSubmissions();
-    const { getById } = useExams()
+    const { getById } = useExams();
+    const { examinators, loading: examinatorsLoading, getByInstitutionId: getExaminatorsByInstitutionId } = useExaminators();
     const { user } = useAuth();
 
     const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
+    const [selectedExaminatorId, setSelectedExaminatorId] = useState<string>("");
     const [error, setError] = useState("");
     const [showSuccess, setShowSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -26,6 +29,7 @@ export default function ExamSubmissionPopup({ examId, onClose }) {
 
                 await getAllByInstitutionId(exam.institutionId);
                 await getByExamId(examId);
+                await getExaminatorsByInstitutionId(exam.institutionId);
 
             } catch (err) {
                 setError(err instanceof Error ? err.message : "Failed to load data");
@@ -55,16 +59,23 @@ export default function ExamSubmissionPopup({ examId, onClose }) {
         setLoading(true);
 
         try {
-            const newSubmissions = selectedStudentIds.map(userId => ({
-                userId,
-                examId
-            }));
-
-            if (newSubmissions.length === 0) {
+            if (selectedStudentIds.length === 0) {
                 setError("Vælg mindst én studerende");
                 setLoading(false);
                 return;
             }
+
+            if (!selectedExaminatorId) {
+                setError("Vælg en eksaminator");
+                setLoading(false);
+                return;
+            }
+
+            const newSubmissions = selectedStudentIds.map(userId => ({
+                userId,
+                examId,
+                examinatorId: selectedExaminatorId
+            }));
 
             await createBulk(examId, newSubmissions);
             setShowSuccess(true);
@@ -101,15 +112,40 @@ export default function ExamSubmissionPopup({ examId, onClose }) {
                                 <ul className="submissions-list">
                                     {submissions.map(submission => {
                                         const student = users.find(u => u.id === submission.userId);
+                                        const examinator = examinators.find(e => e.id === submission.examinatorId);
 
                                         return (
                                             <li key={submission.id} className="submission-item">
-                                                {student ? `${student.userName}` : 'Ukendt studerende'}
+                                                <strong>{student ? `${student.userName}` : 'Ukendt studerende'}</strong>
+                                                <span className="examinator-info">
+                                                    Eksaminator: {examinator ? examinator.userName : 'Ikke tildelt'}
+                                                </span>
                                             </li>
                                         );
                                     })}
                                 </ul>
                             )}
+                        </div>
+
+                        <div className="submission-section">
+                            <h3 className="section-title">Vælg eksaminator *</h3>
+                            <div className="form-group">
+                                <select
+                                    id="examinator"
+                                    value={selectedExaminatorId}
+                                    onChange={(e) => setSelectedExaminatorId(e.target.value)}
+                                    required
+                                    disabled={loading || examinatorsLoading}
+                                    className="examinator-select"
+                                >
+                                    <option value="">-- Vælg eksaminator --</option>
+                                    {examinators.map(examinator => (
+                                        <option key={examinator.id} value={examinator.id}>
+                                            {examinator.userName} ({examinator.email})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
 
                         <div className="submission-section">
@@ -151,7 +187,7 @@ export default function ExamSubmissionPopup({ examId, onClose }) {
                         <button
                             type="submit"
                             className="btn-submit"
-                            disabled={loading || selectedStudentIds.length === 0}
+                            disabled={loading || selectedStudentIds.length === 0 || !selectedExaminatorId}
                         >
                             {loading ? "Opretter..." : "Opret afleveringer"}
                         </button>

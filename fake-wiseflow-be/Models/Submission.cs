@@ -11,6 +11,8 @@ public class Submission
     
     public Guid userId { get; set; }
     
+    public Guid examinatorId { get; set; }
+    
     public string? filePath { get; set; }
     
     public DateTime? uploadDate { get; set; }
