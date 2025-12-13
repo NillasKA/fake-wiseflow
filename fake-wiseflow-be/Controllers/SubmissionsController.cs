@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using fake_wiseflow_be.Identity;
 using fake_wiseflow_be.Models;
 using fake_wiseflow_be.Models.DTOs;
@@ -57,6 +59,72 @@ public class SubmissionsController : ControllerBase
     {
         await _submissionExamCoordinatorService.CreateSubmissionsInBulkAsync(bulkSubmissionRequest.ExamId, bulkSubmissionRequest.Submissions);
         return Ok();
+    }
+
+    [HttpPost("upload")]
+    [Authorize]
+    public async Task<ActionResult> PostUpload([FromForm] Guid? ExamId, [FromForm] IFormFile? File)
+    {
+        if (ExamId == null)
+        {
+            return BadRequest("ExamId is required.");
+        }
+
+        if (File == null || File.Length == 0)
+        {
+            return BadRequest("No file uploaded.");
+        }
+
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+
+        if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId))
+        {
+             return Unauthorized("Invalid user ID in token.");
+        }
+
+        using var memoryStream = new MemoryStream();
+        await File.CopyToAsync(memoryStream);
+
+        var submission = new Submission
+        {
+            userId = userId,
+            FileData = memoryStream.ToArray(),
+            FileName = File.FileName,
+            ContentType = File.ContentType,
+            uploadDate = DateTime.UtcNow,
+            status = SubmissionStatus.Pending
+        };
+
+        try 
+        {
+            await _submissionExamCoordinatorService.CreateSubmissionAsync(ExamId.Value, submission);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+
+        return Ok();
+    }
+
+    [HttpGet("{examId}/file")]
+    [Authorize]
+    public async Task<IActionResult> GetSubmissionFile(Guid examId)
+    {
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId))
+        {
+             return Unauthorized("Invalid user ID in token.");
+        }
+
+        var submission = await _submissionExamCoordinatorService.GetStudentSubmissionAsync(examId, userId);
+
+        if (submission == null || submission.FileData == null || submission.FileData.Length == 0)
+        {
+            return NotFound("Submission file not found.");
+        }
+
+        return File(submission.FileData, submission.ContentType ?? "application/octet-stream", submission.FileName ?? "download");
     }
 
     [HttpPut]

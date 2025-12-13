@@ -24,13 +24,20 @@ public class SubmissionExamCoordinatorService : ISubmissionExamCoordinatorServic
 
         return submissions;
     }
+
+    public async Task<Submission?> GetStudentSubmissionAsync(Guid examId, Guid userId)
+    {
+        var ids = await _examService.GetSubmissionIdsAsync(examId);
+        var submissions = await _submissionService.GetByIdsAsync(ids);
+        return submissions.FirstOrDefault(s => s.userId == userId);
+    }
     
     
     public async Task CreateSubmissionAsync(Guid examId, Submission newSubmission)
     {
         var user = await _userManager.FindByIdAsync(newSubmission.userId.ToString());
         
-        if (user == null || !user.Roles.Contains("Student"))
+        if (user == null || user.Role != UserRole.Student)
         {
             throw new Exception("User not found, or user is not a student.");
         }

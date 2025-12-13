@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import AdminPage from "./pages/AdminPage";
 import LoginPage from "./pages/LoginPage";
+import StudentDashboard from "./pages/StudentDashboard";
 import { AuthProvider } from "./context/AuthContext";
 import RequireAuth from "./components/RequireAuth";
 import MainLayout from "./layouts/MainLayout";
@@ -20,8 +21,8 @@ function App() {
                     <Route element={<MainLayout />}>
                         <Route path="/" element={<HomePage />} />
                         <Route path="/admin" element={<AdminPage />} />
-                        <Route path="/exams" element={<HomePage/> } />
-                        <Route path="/results" element={<HomePage/> } />
+                        <Route path="/exams" element={<StudentDashboard />} />
+                        <Route path="/results" element={<HomePage />} />
                     </Route>
                 </Route>
             </Routes>
