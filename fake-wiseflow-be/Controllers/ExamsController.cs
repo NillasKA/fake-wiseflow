@@ -43,7 +43,7 @@ public class ExamsController : ControllerBase
         return exams;
     }
     
-    [HttpGet("submissions/{id}")]
+    [HttpGet("{id}/submissions")]
     public async Task<ActionResult<List<Guid>>> GetSubmissionIds(Guid id)
     {
         var submissionIds = await _examService.GetSubmissionIdsAsync(id);

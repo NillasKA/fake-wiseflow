@@ -53,6 +53,23 @@ export function useSubmissions() {
         return res.ok;
     }
 
+    async function update(submissionId: string, file: File) {
+        const formData = new FormData();
+        formData.append("File", file);
+
+        const res = await fetch(`${API_URL}/${submissionId}`, {
+            method: "PUT",
+            credentials: "include",
+            body: formData
+        });
+
+        if (!res.ok) {
+            throw new Error("Failed to update submission");
+        }
+
+        return res.ok;
+    }
+
     async function createBulk(examId: string, submissions: SubmissionPartial[]) {
         setLoading(true);
         const res = await fetch(`${API_URL}/bulk`, {
@@ -67,7 +84,7 @@ export function useSubmissions() {
         }
 
         setLoading(false);
-        return await res.json();
+        return res.ok;
     }
 
     return {
@@ -76,6 +93,7 @@ export function useSubmissions() {
         getByExamId,
         getByUserId,
         create,
+        update,
         createBulk
     };
 }

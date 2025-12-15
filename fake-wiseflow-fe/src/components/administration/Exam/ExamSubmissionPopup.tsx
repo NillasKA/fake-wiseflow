@@ -68,6 +68,7 @@ export default function ExamSubmissionPopup({ examId, onClose }) {
 
             await createBulk(examId, newSubmissions);
             setShowSuccess(true);
+            await getByExamId(examId);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Kunne ikke oprette afleveringer");
         } finally {

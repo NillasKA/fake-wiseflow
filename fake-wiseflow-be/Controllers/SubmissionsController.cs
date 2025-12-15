@@ -72,13 +72,8 @@ public class SubmissionsController : ControllerBase
     [HttpPost("upload")]
     [ApiExplorerSettings(IgnoreApi = true)]
     [Authorize]
-    public async Task<ActionResult> PostUpload([FromForm] Guid? ExamId, [FromForm] IFormFile? File)
+    public async Task<ActionResult> PostUpload([FromForm] Guid examId, [FromForm] IFormFile? File)
     {
-        if (ExamId == null)
-        {
-            return BadRequest("ExamId is required.");
-        }
-
         if (File == null || File.Length == 0)
         {
             return BadRequest("No file uploaded.");
@@ -106,7 +101,7 @@ public class SubmissionsController : ControllerBase
 
         try 
         {
-            await _submissionExamCoordinatorService.CreateSubmissionAsync(ExamId.Value, submission);
+            await _submissionExamCoordinatorService.CreateSubmissionAsync(examId, submission);
         }
         catch (Exception ex)
         {
@@ -134,7 +129,37 @@ public class SubmissionsController : ControllerBase
             return NotFound("Submission file not found.");
         }
 
-        return File(submission.FileData, submission.ContentType ?? "application/octet-stream", submission.FileName ?? "download");
+        return File(submission.FileData, submission.ContentType ?? "application/octet-stream");
+    }
+
+    [HttpPut("{id}")]
+    [ApiExplorerSettings(IgnoreApi = true)]
+    public async Task<IActionResult> Put(Guid id, [FromForm] IFormFile File)
+    {
+        if (File == null || File.Length == 0)
+        {
+            return BadRequest("No file uploaded.");
+        }
+
+        var submission = await _submissionService.GetByIdAsync(id);
+
+        if (submission is null)
+        {
+            return NotFound();
+        }
+
+        using var memoryStream = new MemoryStream();
+        await File.CopyToAsync(memoryStream);
+
+        submission.FileData = memoryStream.ToArray();
+        submission.FileName = File.FileName;
+        submission.ContentType = File.ContentType;
+        submission.uploadDate = DateTime.UtcNow;
+        submission.status = SubmissionStatus.Submitted;
+
+        await _submissionService.UpdateAsync(id, submission);
+
+        return Ok();
     }
 
     [HttpPut]
