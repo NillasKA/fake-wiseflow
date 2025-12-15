@@ -1,7 +1,6 @@
 export interface Submission {
-    id: string | null;
+    id: string;
     userId: string;
-    examId: string;
     fileName: string;
     uploadDate: Date;
     status: string;

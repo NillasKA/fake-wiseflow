@@ -9,7 +9,7 @@ import FilePreviewModal from '../components/FilePreviewModal';
 
 export default function StudentDashboard() {
     const { getByUserId, create } = useSubmissions();
-    const { getById } = useExams();
+    const { getBySubmissionId } = useExams();
     const { user } = useAuth();
 
     const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -30,7 +30,7 @@ export default function StudentDashboard() {
             getByUserId(user.id)
                 .then(subs => {
                     setSubmissions(subs);
-                    const examPromises = subs.map((sub: Submission) => getById(sub.examId));
+                    const examPromises = subs.map((sub: Submission) => getBySubmissionId(sub.id));
                     return Promise.all(examPromises);
                 })
                 .then(fetchedExams => {
