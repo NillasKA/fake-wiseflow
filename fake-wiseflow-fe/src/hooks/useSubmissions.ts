@@ -21,7 +21,19 @@ export function useSubmissions() {
         return data;
     }
 
-    async function getByUser
+    async function getByUserId(userId: string) {
+        setLoading(true);
+        const res = await fetch(`${API_URL}/user/${userId}`, { credentials: "include" });
+
+        if (!res.ok) {
+            throw new Error("Failed to fetch submissions by user ID");
+        }
+
+        const data = await res.json();
+        setSubmissions(data);
+        setLoading(false);
+        return data;
+    }
 
     async function create(examId: string, file: File) {
         const formData = new FormData();
@@ -62,6 +74,7 @@ export function useSubmissions() {
         submissions,
         loading,
         getByExamId,
+        getByUserId,
         create,
         createBulk
     };

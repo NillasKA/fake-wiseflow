@@ -92,4 +92,17 @@ public class ExamsController : ControllerBase
 
         return NoContent();
     }
+
+    [HttpGet("submissions/{submissionId}")]
+    public async Task<ActionResult<Exam>> GetExamBySubmissionId(Guid submissionId)
+    {
+        var exam = await _examService.GetExamBySubmissionIdAsync(submissionId);
+
+        if (exam is null)
+        {
+            return NotFound();
+        }
+        
+        return Ok(exam);
+    }
 }

@@ -70,6 +70,7 @@ public class SubmissionsController : ControllerBase
     }
 
     [HttpPost("upload")]
+    [ApiExplorerSettings(IgnoreApi = true)]
     [Authorize]
     public async Task<ActionResult> PostUpload([FromForm] Guid? ExamId, [FromForm] IFormFile? File)
     {
@@ -116,6 +117,7 @@ public class SubmissionsController : ControllerBase
     }
 
     [HttpGet("{examId}/file")]
+    [ApiExplorerSettings(IgnoreApi = true)]
     [Authorize]
     public async Task<IActionResult> GetSubmissionFile(Guid examId)
     {
