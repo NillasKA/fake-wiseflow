@@ -21,6 +21,24 @@ export function useSubmissions() {
         return data;
     }
 
+    async function create(examId: string, file: File) {
+        const formData = new FormData();
+        formData.append("ExamId", examId);
+        formData.append("File", file);
+
+        const res = await fetch(`${API_URL}/upload`, {
+            method: "POST",
+            credentials: "include",
+            body: formData
+        });
+
+        if (!res.ok) {
+            throw new Error("Failed to upload submission");
+        }
+
+        return res.ok;
+    }
+
     async function createBulk(examId: string, submissions: SubmissionPartial[]) {
         setLoading(true);
         const res = await fetch(`${API_URL}/bulk`, {
@@ -42,6 +60,7 @@ export function useSubmissions() {
         submissions,
         loading,
         getByExamId,
+        create,
         createBulk
     };
 }

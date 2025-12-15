@@ -1,5 +1,4 @@
 using AspNetCore.Identity.Mongo;
-using AspNetCore.Identity.Mongo.Model;
 using DotNetEnv;
 using fake_wiseflow_be.Data;
 using fake_wiseflow_be.DependencyInjection;

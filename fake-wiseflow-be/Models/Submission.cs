@@ -16,6 +16,10 @@ public class Submission
     public DateTime? uploadDate { get; set; }
     
     public SubmissionStatus status { get; set; } = SubmissionStatus.Pending;
+
+    public byte[]? FileData { get; set; }
+    public string? FileName { get; set; }
+    public string? ContentType { get; set; }
 }
 
 public enum SubmissionStatus
