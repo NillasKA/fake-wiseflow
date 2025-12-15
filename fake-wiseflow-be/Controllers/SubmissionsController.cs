@@ -3,6 +3,8 @@ using fake_wiseflow_be.Models;
 using fake_wiseflow_be.Models.DTOs;
 using fake_wiseflow_be.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace fake_wiseflow_be.Controllers;
 
@@ -39,6 +41,7 @@ public class SubmissionsController : ControllerBase
     }
 
     [HttpGet("exam/{examId}")]
+    [Authorize(Roles = "Examiner")]
     public async Task<ActionResult<List<Submission>>> GetByExamId(Guid examId)
     {
         var submissions = await _submissionExamCoordinatorService.GetSubmissionsAsync(examId);
