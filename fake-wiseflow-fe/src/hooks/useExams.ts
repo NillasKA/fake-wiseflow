@@ -23,6 +23,13 @@ export function useExams() {
         return res.json();
     }
 
+    async function getBySubmissionId(submissionId: string) {
+        const res = await fetch(`${API_URL}/submissions/${submissionId}`, { credentials: "include" });
+        if (!res.ok) return null;
+
+        return res.json();
+    }
+
     async function create(examData: ExamPartial) {
         const response = await fetch(API_URL, {
             method: "POST",
@@ -82,6 +89,7 @@ export function useExams() {
         loading,
         getAll,
         getById,
+        getBySubmissionId,
         create,
         update,
         remove,

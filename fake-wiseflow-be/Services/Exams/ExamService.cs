@@ -43,4 +43,16 @@ public class ExamService : IExamService
         
         await _examRepository.UpdateAsync(examId, exam);
     }
+
+    public async Task<Exam> GetExamBySubmissionIdAsync(Guid submissionId)
+    {
+        var exam = await _examRepository.GetExamBySubmissionIdAsync(submissionId);
+
+        if (exam is null)
+        {
+            throw new Exception("Exam not found");
+        }
+
+        return exam;
+    }
 }

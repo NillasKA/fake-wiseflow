@@ -10,6 +10,8 @@ public interface ISubmissionService
     
     Task<List<Submission>> GetByIdsAsync(List<Guid> ids);
 
+    Task<List<Submission>> GetByUserIdAsync(Guid userId);
+
     Task CreateAsync(Submission newSubmission);
 
     Task CreateBulkAsync(List<Submission> newSubmissions);

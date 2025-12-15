@@ -12,6 +12,8 @@
 }
 
 .modal-content {
+    display: flex;
+    flex-direction: column;
     background: white;
     border-radius: 8px;
     width: 90%;

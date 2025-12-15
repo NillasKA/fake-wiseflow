@@ -21,6 +21,20 @@ export function useSubmissions() {
         return data;
     }
 
+    async function getByUserId(userId: string) {
+        setLoading(true);
+        const res = await fetch(`${API_URL}/user/${userId}`, { credentials: "include" });
+
+        if (!res.ok) {
+            throw new Error("Failed to fetch submissions by user ID");
+        }
+
+        const data = await res.json();
+        setSubmissions(data);
+        setLoading(false);
+        return data;
+    }
+
     async function create(examId: string, file: File) {
         const formData = new FormData();
         formData.append("ExamId", examId);
@@ -34,6 +48,23 @@ export function useSubmissions() {
 
         if (!res.ok) {
             throw new Error("Failed to upload submission");
+        }
+
+        return res.ok;
+    }
+
+    async function update(submissionId: string, file: File) {
+        const formData = new FormData();
+        formData.append("File", file);
+
+        const res = await fetch(`${API_URL}/${submissionId}`, {
+            method: "PUT",
+            credentials: "include",
+            body: formData
+        });
+
+        if (!res.ok) {
+            throw new Error("Failed to update submission");
         }
 
         return res.ok;
@@ -53,14 +84,16 @@ export function useSubmissions() {
         }
 
         setLoading(false);
-        return await res.json();
+        return res.ok;
     }
 
     return {
         submissions,
         loading,
         getByExamId,
+        getByUserId,
         create,
+        update,
         createBulk
     };
 }
