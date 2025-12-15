@@ -93,7 +93,7 @@ export default function StudentDashboard() {
             <div className="exam-list-container">
                 <div className="exam-list-header">
                     <span className="header-col">Eksamen</span>
-                    <span className="header-col" style={{ textAlign: 'center' }}>Dato</span>
+                    <span className="header-col text-center">Dato</span>
                     <span className="header-col">Status</span>
                 </div>
                 <div className="exam-list-body">
@@ -109,8 +109,8 @@ export default function StudentDashboard() {
                             }}
                         >
                             <span>{exam.title}</span>
-                            <span style={{ textAlign: 'center' }}>{new Date(exam.date).toLocaleDateString('da-DK')}</span>
-                            <span style={{ textAlign: 'right' }}>{getExamStatus(exam)}</span>
+                            <span className="text-center">{new Date(exam.date).toLocaleDateString('da-DK')}</span>
+                            <span className="text-right">{getExamStatus(exam)}</span>
                         </div>
                     ))}
                 </div>
@@ -136,7 +136,7 @@ export default function StudentDashboard() {
                                     <input
                                         type="file"
                                         ref={fileInputRef}
-                                        style={{ display: 'none' }}
+                                        className="display-none"
                                         onChange={handleFileChange}
                                     />
                                     <button className="btn-upload-trigger" onClick={handleFileUpload}>
@@ -186,8 +186,7 @@ export default function StudentDashboard() {
                                 <div className="progress-container">
                                     <div className="progress-bar">
                                         <div
-                                            className="progress-fill"
-                                            style={{ width: submissionStatus === 0 ? '5%' : submissionStatus === 1 ? '60%' : '100%' }}
+                                            className={`progress-fill ${submissionStatus === 0 ? 'progress-fill-none' : submissionStatus === 1 ? 'progress-fill-uploaded' : 'progress-fill-submitted'}`}
                                         ></div>
                                     </div>
                                     <div className="progress-labels">
@@ -198,9 +197,8 @@ export default function StudentDashboard() {
                                 </div>
 
                                 <button
-                                    className="btn-submit-final"
+                                    className={`btn-submit-final ${submissionStatus === 2 ? 'submit-disabled' : ''}`}
                                     onClick={handleSubmit}
-                                    style={{ opacity: submissionStatus === 2 ? 0.5 : 1 }}
                                     disabled={submissionStatus !== 1}
                                 >
                                     {submissionStatus === 2 ? 'Afleveret' : 'Aflever'}

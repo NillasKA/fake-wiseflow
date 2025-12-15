@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import '../stylesheets/components/FilePreviewModal.css';
 
 interface FilePreviewModalProps {
     isOpen: boolean;
@@ -42,10 +43,10 @@ export default function FilePreviewModal({ isOpen, onClose, fileUrl, fileName, f
                 </div>
                 <div className="modal-content">
                     {isImage && (
-                        <img src={fileUrl} alt={fileName} style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain' }} />
+                        <img src={fileUrl} alt={fileName} />
                     )}
                     {(isPDF || isText) && (
-                        <iframe src={fileUrl} title={fileName} width="100%" height="600px" style={{ border: 'none' }} />
+                        <iframe src={fileUrl} title={fileName} width="100%" height="600px" />
                     )}
                     {!isImage && !isPDF && !isText && (
                         <div className="preview-fallback">
@@ -55,95 +56,6 @@ export default function FilePreviewModal({ isOpen, onClose, fileUrl, fileName, f
                     )}
                 </div>
             </div>
-            <style>{`
-                .modal-overlay {
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    background-color: rgba(0, 0, 0, 0.7);
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    z-index: 1000;
-                    backdrop-filter: blur(4px);
-                    animation: fadeIn 0.2s ease-out;
-                }
-                .modal-container {
-                    background: white;
-                    border-radius: 12px;
-                    padding: 24px;
-                    width: 90%;
-                    max-width: 900px;
-                    max-height: 90vh;
-                    display: flex;
-                    flex-direction: column;
-                    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-                    animation: scaleIn 0.2s ease-out;
-                }
-                .modal-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 16px;
-                    border-bottom: 1px solid #eee;
-                    padding-bottom: 16px;
-                }
-                .modal-header h3 {
-                    margin: 0;
-                    font-size: 1.25rem;
-                    font-weight: 600;
-                    color: #1a1a1a;
-                }
-                .btn-close {
-                    background: none;
-                    border: none;
-                    font-size: 2rem;
-                    line-height: 1;
-                    cursor: pointer;
-                    color: #666;
-                    transition: color 0.2s;
-                    padding: 0 8px;
-                }
-                .btn-close:hover {
-                    color: #000;
-                }
-                .modal-content {
-                    flex: 1;
-                    overflow: auto;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    min-height: 300px;
-                    background: #f8f9fa;
-                    border-radius: 8px;
-                }
-                .preview-fallback {
-                    text-align: center;
-                }
-                .btn-download {
-                    display: inline-block;
-                    margin-top: 16px;
-                    padding: 10px 20px;
-                    background: #2563eb;
-                    color: white;
-                    text-decoration: none;
-                    border-radius: 6px;
-                    transition: background 0.2s;
-                }
-                .btn-download:hover {
-                    background: #1d4ed8;
-                }
-                @keyframes fadeIn {
-                    from { opacity: 0; }
-                    to { opacity: 1; }
-                }
-                @keyframes scaleIn {
-                    from { transform: scale(0.95); opacity: 0; }
-                    to { transform: scale(1); opacity: 1; }
-                }
-            `}</style>
         </div>
     );
 }
