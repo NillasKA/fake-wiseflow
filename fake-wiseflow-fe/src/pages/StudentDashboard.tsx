@@ -8,6 +8,7 @@ import FilePreviewModal from '../components/FilePreviewModal';
 
 export default function StudentDashboard() {
     const { exams, getAll, loading } = useExams();
+    const { } = useSubmissions();
     const { user } = useAuth();
     const { create } = useSubmissions();
 

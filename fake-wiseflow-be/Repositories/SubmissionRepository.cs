@@ -30,6 +30,9 @@ public class SubmissionRepository : ISubmissionRepository
     
     public async Task<List<Submission>> GetByIdsAsync(List<Guid> ids) =>
         await _submissionsCollection.Find(x => ids.Contains(x.id)).ToListAsync();
+    
+    public async Task<List<Submission>> GetByUserIdAsync(Guid userId) =>
+        await _submissionsCollection.Find(x => x.userId == userId).ToListAsync();
 
     public async Task CreateAsync(Submission newSubmission) =>
         await _submissionsCollection.InsertOneAsync(newSubmission);

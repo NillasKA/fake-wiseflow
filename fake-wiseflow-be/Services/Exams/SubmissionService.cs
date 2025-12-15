@@ -28,6 +28,11 @@ public class SubmissionService : ISubmissionService
         return await _submissionRepository.GetByIdsAsync(ids);
     }
 
+    public async Task<List<Submission>> GetByUserIdAsync(Guid userId)
+    {
+        return await _submissionRepository.GetByUserIdAsync(userId);
+    }
+
     public async Task CreateAsync(Submission newSubmission)
     {
         await _submissionRepository.CreateAsync(newSubmission);

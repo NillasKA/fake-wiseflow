@@ -47,6 +47,14 @@ public class SubmissionsController : ControllerBase
         return Ok(submissions);
     }
 
+    [HttpGet("user/{userId}")]
+    public async Task<ActionResult<List<Submission>>> GetByUserId(Guid userId)
+    {
+        var submissions = await _submissionService.GetByUserIdAsync(userId);
+        
+        return Ok(submissions);
+    }
+
     [HttpPost]
     public async Task<ActionResult> Post(SubmissionRequest submissionRequest)
     {

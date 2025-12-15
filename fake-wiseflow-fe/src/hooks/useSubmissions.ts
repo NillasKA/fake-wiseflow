@@ -21,6 +21,8 @@ export function useSubmissions() {
         return data;
     }
 
+    async function getByUser
+
     async function create(examId: string, file: File) {
         const formData = new FormData();
         formData.append("ExamId", examId);
