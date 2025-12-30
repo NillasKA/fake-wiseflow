@@ -10,6 +10,10 @@ public static class ServiceRegistry
         builder.Services.AddScoped<IStudentService, StudentService>();
         builder.Services.AddScoped<IExaminatorService, ExaminatorService>();    
         builder.Services.AddScoped<IPasswordGeneratorService, PasswordGeneratorService>();
+        builder.Services.AddScoped<ISubmissionService, SubmissionService>();
+        builder.Services.AddScoped<IExamService, ExamService>();
+        builder.Services.AddScoped<ISubmissionExamCoordinatorService, SubmissionExamCoordinatorService>();
+        
         return builder;
     }
 }

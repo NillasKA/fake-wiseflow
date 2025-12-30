@@ -28,6 +28,23 @@ public class ExamRepository
     public async Task<Exam?> GetAsync(Guid id) =>
         await _examsCollection.Find(x => x.id == id).FirstOrDefaultAsync();
 
+    public async Task<List<Exam>> GetByInstitutionIdAsync(Guid institutionId) =>
+        await _examsCollection.Find(x => x.InstitutionId == institutionId).ToListAsync();
+
+
+    public async Task<List<Guid>> GetSubmissionIdsAsync(Guid examId)
+    {
+        List<Guid> submissionIds = new List<Guid>();
+        var exam = await _examsCollection.Find(x => x.id == examId).FirstOrDefaultAsync();
+        
+        if (exam == null || exam.submissionIds == null)
+        {
+            return new List<Guid>();
+        }
+        
+        return exam.submissionIds;
+    }
+    
     public async Task CreateAsync(Exam newExam) =>
         await _examsCollection.InsertOneAsync(newExam);
 

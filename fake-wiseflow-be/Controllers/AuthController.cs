@@ -80,4 +80,19 @@ public class AuthController : ControllerBase
         var roles = await _users.GetRolesAsync(user);
         return Ok(new { user.Id, user.Email, user.UserName, Roles = roles });
     }
+
+    [HttpPut("change-password")]
+    [Authorize]
+    public async Task<IActionResult> UpdatePassword(string currentPassword, string newPassword)
+    {
+        var user = await _users.GetUserAsync(User);
+        if (user == null)
+        {
+            return NotFound("User not found.");
+        }
+        
+        await _users.ChangePasswordAsync(user, currentPassword, newPassword);
+
+        return Ok();
+    }
 }

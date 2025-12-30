@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Exam } from "../models/Exam";
+import type {Exam, ExamPartial} from "../models/Exam";
 
 const API_URL = "https://localhost:7130/api/exams";
 
@@ -19,18 +19,25 @@ export function useExams() {
     async function getById(id: string) {
         const res = await fetch(`${API_URL}/${id}`, { credentials: "include" });
         if (!res.ok) return null;
-        return await res.json();
+
+        return res.json();
     }
 
-    async function create(exam: Exam) {
-        await fetch(API_URL, {
+    async function create(examData: ExamPartial) {
+        const response = await fetch(API_URL, {
             method: "POST",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(exam)
+            body: JSON.stringify(examData)
         });
+
+        if (!response.ok) {
+            throw new Error("Failed to create exam");
+        }
+
         return getAll();
     }
+
 
     async function update(id: string, exam: Exam) {
         await fetch(`${API_URL}?id=${id}`, {
@@ -50,6 +57,26 @@ export function useExams() {
         return getAll();
     }
 
+    async function getAllForInstitution (institutionId: string) {
+        setLoading(true);
+        SetExams([])
+        try {
+            const response = await fetch(`${API_URL}/institution/${institutionId}`, {
+                credentials: "include"
+            });
+            if (!response.ok) {
+                throw new Error("Failed to fetch exams for institution");
+            }
+            const data = await response.json();
+            SetExams(data);
+            return exams;
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    }
+
     return {
         exams,
         loading,
@@ -57,6 +84,7 @@ export function useExams() {
         getById,
         create,
         update,
-        remove
+        remove,
+        getAllForInstitution
     };
 }

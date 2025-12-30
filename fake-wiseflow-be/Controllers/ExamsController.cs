@@ -1,7 +1,7 @@
 using fake_wiseflow_be.Models;
 using fake_wiseflow_be.Repositories;
+using fake_wiseflow_be.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 
 namespace fake_wiseflow_be.Controllers;
 
@@ -10,9 +10,13 @@ namespace fake_wiseflow_be.Controllers;
 public class ExamsController : ControllerBase
 {
     private readonly ExamRepository _examRepository;
+    private readonly IExamService _examService;
 
-    public ExamsController(ExamRepository examRepository) =>
+    public ExamsController(ExamRepository examRepository, IExamService examService)
+    {
         _examRepository = examRepository;
+        _examService = examService;
+    }
 
     [HttpGet]
     public async Task<List<Exam>> Get() =>
@@ -30,6 +34,23 @@ public class ExamsController : ControllerBase
 
         return exam;
     }
+    
+    [HttpGet("institution/{id}")]
+    public async Task<ActionResult<List<Exam>>> GetByInstitution(Guid id)
+    {
+        var exams = await _examRepository.GetByInstitutionIdAsync(id);
+
+        return exams;
+    }
+    
+    [HttpGet("submissions/{id}")]
+    public async Task<ActionResult<List<Guid>>> GetSubmissionIds(Guid id)
+    {
+        var submissionIds = await _examService.GetSubmissionIdsAsync(id);
+
+        return submissionIds;
+    }
+
 
     [HttpPost]
     //[Authorize(Roles = "InstitutionAdmin")]
@@ -37,10 +58,10 @@ public class ExamsController : ControllerBase
     {
         await _examRepository.CreateAsync(newExam);
 
-        return CreatedAtAction(nameof(Get), new { id = newExam.id }, newExam);
+        return Ok(newExam);
     }
 
-    [HttpPut()]
+    [HttpPut]
     public async Task<IActionResult> Update(Guid id, Exam updatedExam)
     {
         var exam = await _examRepository.GetAsync(id);
@@ -57,7 +78,7 @@ public class ExamsController : ControllerBase
         return NoContent();
     }
 
-    [HttpDelete()]
+    [HttpDelete]
     public async Task<IActionResult> Delete(Guid id)
     {
         var exam = await _examRepository.GetAsync(id);

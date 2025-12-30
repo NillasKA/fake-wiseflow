@@ -2,7 +2,7 @@ import { useState } from "react";
 import "../stylesheets/pages/AdminPage.css"
 import InstitutionModule from "../components/administration/InstitutionModule.tsx";
 import UserModule from "../components/administration/UserModule";
-import ExamModule from "../components/administration/ExamModule";
+import ExamModule from "../components/administration/Exam/ExamModule.tsx";
 import { useAuth } from "../hooks/useAuth";
 
 export default function AdminPage() {
@@ -33,7 +33,10 @@ export default function AdminPage() {
                 isSuperAdmin={isSuperAdmin}
             />
 
-            <ExamModule />
+            <ExamModule
+                institutionId={effectiveInstitutionId}
+                isSuperAdmin={isSuperAdmin}
+            />
 
         </div>
     );

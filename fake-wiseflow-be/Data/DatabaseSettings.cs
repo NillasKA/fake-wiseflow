@@ -11,4 +11,6 @@ public class DatabaseSettings
     public string InstitutionsCollectionName => "Institutions";
 
     public string UsersCollectionName => "Users";
+    
+    public string SubmissionsCollectionName => "Submissions";
 }

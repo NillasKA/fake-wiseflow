@@ -1,14 +1,7 @@
 import { useEffect, useState } from "react";
 import UserModal from "./UserModal";
 import "../../stylesheets/components/InstitutionModule.css";
-
-export type User = {
-    id: string;
-    email: string;
-    userName: string;
-    role: string;
-    institutionId?: string;
-};
+import type {User} from "../../models/User.ts";
 
 const STUDENT_API = "https://localhost:7130/api/Student";
 const EXAMINATOR_API = "https://localhost:7130/api/Examinator";
@@ -84,7 +77,6 @@ export default function UserModule({ institutionId, isSuperAdmin }: UserModulePr
         u.role.toLowerCase().includes(search.toLowerCase())
     );
 
-    // Determine if Add button should be disabled
     const canAddUser = isSuperAdmin ? institutionId !== null : true;
 
     return (

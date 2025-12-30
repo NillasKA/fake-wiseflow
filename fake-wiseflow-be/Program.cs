@@ -1,5 +1,4 @@
 using AspNetCore.Identity.Mongo;
-using AspNetCore.Identity.Mongo.Model;
 using DotNetEnv;
 using fake_wiseflow_be.Data;
 using fake_wiseflow_be.DependencyInjection;
@@ -37,7 +36,7 @@ builder.Services.Configure<DatabaseSettings>(
     builder.Configuration.GetSection("fake-wiseflow-db"));
 var dbConfig = builder.Configuration.GetSection("fake-wiseflow-db").Get<DatabaseSettings>()!;
 
-builder.Services.AddIdentityMongoDbProvider<User>(
+builder.Services.AddIdentityMongoDbProvider<User, Role, Guid>(
     mongo => mongo.ConnectionString = dbConfig.ConnectionString);
 
 builder.Services.ConfigureApplicationCookie(options =>
@@ -77,12 +76,15 @@ var app = builder.Build();
 app.Lifetime.ApplicationStarted.Register(async void () =>
 {
     using var scope = app.Services.CreateScope();
-    var roleMgr = scope.ServiceProvider.GetRequiredService<RoleManager<MongoRole>>();
+    
+    var roleMgr = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
 
     foreach (var roleName in Enum.GetNames(typeof(UserRole)))
     {
         if (!await roleMgr.RoleExistsAsync(roleName))
-            await roleMgr.CreateAsync(new MongoRole(roleName));
+        {
+            await roleMgr.CreateAsync(new Role(roleName));
+        }
     }
 });
 
