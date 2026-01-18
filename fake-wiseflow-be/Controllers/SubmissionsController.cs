@@ -57,8 +57,22 @@ public class SubmissionsController : ControllerBase
     [HttpPost("bulk")]
     public async Task<ActionResult> PostBulk(BulkSubmissionRequest bulkSubmissionRequest)
     {
-        await _submissionExamCoordinatorService.CreateSubmissionsInBulkAsync(bulkSubmissionRequest.ExamId, bulkSubmissionRequest.Submissions);
-        return Ok();
+        try
+        {
+            await _submissionExamCoordinatorService.CreateSubmissionsInBulkAsync(
+                bulkSubmissionRequest.ExamId, 
+                bulkSubmissionRequest.Submissions
+            );
+        
+            return Ok(new { 
+                message = "Submissions created successfully",
+                count = bulkSubmissionRequest.Submissions.Count 
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }   
     }
 
     [HttpPost("upload")]

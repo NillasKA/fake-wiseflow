@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Submission, SubmissionPartial } from "../models/Submission.ts";
+import type { Submission, SubmissionPartial } from "../models/Submission";
 
 const API_URL = "https://localhost:7130/api/submissions";
 
@@ -9,16 +9,29 @@ export function useSubmissions() {
 
     async function getByExamId(examId: string) {
         setLoading(true);
-        const res = await fetch(`${API_URL}/exam/${examId}`, { credentials: "include" });
+        try {
+            const res = await fetch(`${API_URL}/exam/${examId}`, { credentials: "include" });
 
-        if (!res.ok) {
-            throw new Error("Failed to fetch submissions");
+            if (!res.ok) {
+                throw new Error(`Failed to fetch submissions: ${res.status}`);
+            }
+
+            const contentType = res.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+                const data = await res.json();
+                setSubmissions(data);
+                return data;
+            } else {
+                setSubmissions([]);
+                return [];
+            }
+        } catch (error) {
+            console.error("Error fetching submissions:", error);
+            setSubmissions([]);
+            throw error;
+        } finally {
+            setLoading(false);
         }
-
-        const data = await res.json();
-        setSubmissions(data);
-        setLoading(false);
-        return data;
     }
 
     async function create(examId: string, file: File) {
@@ -41,19 +54,33 @@ export function useSubmissions() {
 
     async function createBulk(examId: string, submissions: SubmissionPartial[]) {
         setLoading(true);
-        const res = await fetch(`${API_URL}/bulk`, {
-            method: "POST",
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ examId, submissions })
-        });
+        try {
+            const res = await fetch(`${API_URL}/bulk`, {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ examId, submissions })
+            });
 
-        if (!res.ok) {
-            throw new Error("Failed to create submissions");
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(`Failed to create submissions: ${errorText}`);
+            }
+
+            // Check if response has JSON content before parsing
+            const contentType = res.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+                return await res.json();
+            }
+            
+            // If no JSON content, just return success
+            return { success: true };
+        } catch (error) {
+            console.error("Error creating bulk submissions:", error);
+            throw error;
+        } finally {
+            setLoading(false);
         }
-
-        setLoading(false);
-        return await res.json();
     }
 
     return {
