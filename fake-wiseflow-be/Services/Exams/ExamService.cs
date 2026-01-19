@@ -18,6 +18,11 @@ public class ExamService : IExamService
         return await _examRepository.GetSubmissionIdsAsync(examId);
     }
 
+    public async Task<List<Exam>> GetExamsByExaminatorIdAsync(Guid examinatorId)
+    {
+        return await _examRepository.GetByExaminatorIdAsync(examinatorId);
+    }
+
     public async Task AddSubmissionAsync(Guid examId, Submission submission)
     {
         var exam = await _examRepository.GetAsync(examId);

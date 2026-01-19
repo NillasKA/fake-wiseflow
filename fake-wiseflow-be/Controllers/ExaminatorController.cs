@@ -1,6 +1,6 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using fake_wiseflow_be.Services;
+using fake_wiseflow_be.Models;
 using fake_wiseflow_be.Models.DTOs;
 
 namespace fake_wiseflow_be.Controllers;
@@ -11,11 +11,15 @@ namespace fake_wiseflow_be.Controllers;
 public class ExaminatorController : ControllerBase
 {
     private readonly IExaminatorService _examinatorService;
+    private readonly IExamService _examService;
+    private readonly ISubmissionExamCoordinatorService _submissionExamCoordinatorService;
     private readonly ILogger<ExaminatorController> _logger;
 
-    public ExaminatorController(IExaminatorService examinatorService, ILogger<ExaminatorController> logger)
+    public ExaminatorController(IExaminatorService examinatorService, IExamService examService, ISubmissionExamCoordinatorService submissionExamCoordinatorService, ILogger<ExaminatorController> logger)
     {
         _examinatorService = examinatorService;
+        _examService = examService;
+        _submissionExamCoordinatorService = submissionExamCoordinatorService;
         _logger = logger;
     }
 
@@ -61,6 +65,25 @@ public class ExaminatorController : ControllerBase
     {
         var examinators = await _examinatorService.GetExaminatorsByInstitutionAsync(institutionId);
         return Ok(examinators);
+    }
+
+    [HttpGet("{id}/exams")]
+    public async Task<IActionResult> GetExamsForExaminator(string id)
+    {
+        if (!Guid.TryParse(id, out var examinatorId))
+        {
+            return BadRequest("Invalid ID format.");
+        }
+        var exams = await _examService.GetExamsByExaminatorIdAsync(examinatorId);
+        return Ok(exams);
+    }
+
+    [HttpGet("exams/{examId}/submissions")]
+    public async Task<IActionResult> GetSubmittedSubmissionsForExam(Guid examId)
+    {
+        var submissions = await _submissionExamCoordinatorService.GetSubmissionsAsync(examId);
+        var submittedSubmissions = submissions.Where(s => s.status == SubmissionStatus.Submitted).ToList();
+        return Ok(submittedSubmissions);
     }
 
     [HttpDelete("{id}")]

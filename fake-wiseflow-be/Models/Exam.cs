@@ -9,6 +9,8 @@ public class Exam
     
     public List<Guid> submissionIds { get; set; } = [];
     
+    public List<Guid> ExaminatorIds { get; set; } = [];
+    
     public Guid InstitutionId { get; set; }
     public string title { get; set; }
     
