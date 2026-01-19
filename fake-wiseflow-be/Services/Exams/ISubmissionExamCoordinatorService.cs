@@ -10,5 +10,4 @@ public interface ISubmissionExamCoordinatorService
     Task CreateSubmissionAsync(Guid examId, Submission newSubmission);
 
     Task CreateSubmissionsInBulkAsync(Guid examId, List<Submission> newSubmissions);
-
 }

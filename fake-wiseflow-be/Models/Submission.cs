@@ -11,6 +11,8 @@ public class Submission
     
     public Guid userId { get; set; }
     
+    public Guid examId { get; set; }
+    
     public string? filePath { get; set; }
     
     public DateTime? uploadDate { get; set; }
@@ -25,7 +27,7 @@ public class Submission
 public enum SubmissionStatus
 {
     Pending,
-    Graded,
-    Returned
+    Submitted,
+    Graded
 }
     

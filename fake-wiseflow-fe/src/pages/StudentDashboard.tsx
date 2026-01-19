@@ -3,17 +3,21 @@ import { useExams } from '../hooks/useExams';
 import { useAuth } from '../hooks/useAuth';
 import { useSubmissions } from '../hooks/useSubmissions';
 import type { Exam } from '../models/Exam';
+import type { Submission } from '../models/Submission';
 import '../stylesheets/pages/StudentDashboard.css';
 import FilePreviewModal from '../components/FilePreviewModal';
 
 export default function StudentDashboard() {
-    const { exams, getAll, loading } = useExams();
+    const { getByUserId, update } = useSubmissions();
+    const { getBySubmissionId } = useExams();
     const { user } = useAuth();
-    const { create } = useSubmissions();
 
-    const [selectedExam, setSelectedExam] = useState<Exam | null>(null);
+    const [submissions, setSubmissions] = useState<Submission[]>([]);
+    const [exams, setExams] = useState<Exam[]>([]);
+    const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-    const [submissionStatus, setSubmissionStatus] = useState<number>(0); // 0: None, 1: Uploaded, 2: Submitted
+    const [loading, setLoading] = useState(true);
+    const [submittedFileName, setSubmittedFileName] = useState<string | null>(null);
 
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -21,19 +25,52 @@ export default function StudentDashboard() {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        getAll();
-    }, []);
+        if (user) {
+            setLoading(true);
+            getByUserId(user.id)
+                .then(subs => {
+                    setSubmissions(subs);
+                    const examPromises = subs.map((sub: Submission) => getBySubmissionId(sub.id));
+                    return Promise.all(examPromises);
+                })
+                .then(fetchedExams => {
+                    setExams(fetchedExams.filter(exam => exam !== null) as Exam[]);
+                    setLoading(false);
+                })
+                .catch(error => {
+                    console.error("Failed to fetch submissions or exams", error);
+                    setLoading(false);
+                });
+        }
+    }, [user]);
 
     useEffect(() => {
-        if (exams.length > 0 && !selectedExam) {
-            setSelectedExam(exams[0]);
+        if (submissions.length > 0 && !selectedSubmission) {
+            setSelectedSubmission(submissions[0]);
         }
-    }, [exams, selectedExam]);
+    }, [submissions, selectedSubmission]);
 
-    // Mock derived status for list
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const getExamStatus = (_exam: Exam) => {
-        return "Ikke afleveret";
+    useEffect(() => {
+        if (selectedSubmission) {
+            setSubmittedFileName(selectedSubmission.fileName);
+        } else {
+            setSubmittedFileName(null);
+        }
+    }, [selectedSubmission]);
+
+    const getExamStatus = (exam: Exam) => {
+        const submission = submissions.find(s => s.examId === exam.id);
+        if (submission) {
+            switch (submission.status.toString()) {
+                case "1":
+                    return "Submitted";
+                case "2":
+                    return "Graded";
+                default:
+                    return "Pending";
+            }
+        }
+        return "Not assigned";
     };
 
     const handleFileUpload = () => {
@@ -44,17 +81,17 @@ export default function StudentDashboard() {
         const file = event.target.files?.[0];
         if (file) {
             setUploadedFile(file);
-            setSubmissionStatus(1);
         }
     };
 
     const handleSubmit = async () => {
-        if (!selectedExam || !uploadedFile || !user) return;
+        if (!selectedSubmission || !selectedSubmission.id || !uploadedFile || !user) return;
 
         try {
-            await create(selectedExam.id, uploadedFile);
-            setSubmissionStatus(2);
+            await update(selectedSubmission.id, uploadedFile);
             alert("Afleveret succesfuldt!");
+            setUploadedFile(null);
+            getByUserId(user.id).then(setSubmissions);
         } catch (error) {
             console.error("Failed to submit", error);
             alert("Fejl ved aflevering.");
@@ -76,14 +113,31 @@ export default function StudentDashboard() {
             const url = URL.createObjectURL(uploadedFile);
             setPreviewUrl(url);
             setIsPreviewOpen(true);
+        } else if (selectedSubmission?.fileName) {
+            const examId = selectedSubmission.examId;
+            if (examId) {
+                const url = `https://localhost:7130/api/submissions/${examId}/file`;
+                setPreviewUrl(url);
+                setIsPreviewOpen(true);
+            }
         }
     };
 
     useEffect(() => {
         return () => {
-            if (previewUrl) URL.revokeObjectURL(previewUrl);
+            if (previewUrl && !previewUrl.startsWith('https://localhost')) {
+                URL.revokeObjectURL(previewUrl);
+            }
         };
     }, [previewUrl]);
+
+    const submissionProgress = selectedSubmission
+        ? selectedSubmission.status.toString() === "1" || selectedSubmission.status.toString() === "2"
+            ? 2 // Submitted or Graded
+            : uploadedFile
+            ? 1 // Uploaded but not submitted
+            : 0 // Pending
+        : 0;
 
     if (loading) return <div className="p-8">Loading exams...</div>;
 
@@ -97,38 +151,40 @@ export default function StudentDashboard() {
                     <span className="header-col">Status</span>
                 </div>
                 <div className="exam-list-body">
-                    {exams.map(exam => (
-                        <div
-                            key={exam.id}
-                            className={`exam-list-item ${selectedExam?.id === exam.id ? 'selected' : ''}`}
-                            onClick={() => {
-                                setSelectedExam(exam);
-                                setUploadedFile(null);
-                                setSubmissionStatus(0);
-                                if (fileInputRef.current) fileInputRef.current.value = "";
-                            }}
-                        >
-                            <span>{exam.title}</span>
-                            <span className="text-center">{new Date(exam.date).toLocaleDateString('da-DK')}</span>
-                            <span className="text-right">{getExamStatus(exam)}</span>
-                        </div>
-                    ))}
+                    {exams.map(exam => {
+                        const submission = submissions.find(s => s.examId === exam.id);
+                        return (
+                            <div
+                                key={exam.id}
+                                className={`exam-list-item ${selectedSubmission?.examId === exam.id ? 'selected' : ''}`}
+                                onClick={() => {
+                                    setSelectedSubmission(submission!);
+                                    setUploadedFile(null);
+                                    if (fileInputRef.current) fileInputRef.current.value = "";
+                                }}
+                            >
+                                <span>{exam.title}</span>
+                                <span className="text-center">{new Date(exam.date).toLocaleDateString('da-DK')}</span>
+                                <span className="text-right">{getExamStatus(exam)}</span>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 
             {/* Main Content - Detail */}
-            {selectedExam && (
+            {selectedSubmission && (
                 <div className="exam-detail-container">
                     <div className="exam-detail-header">
-                        <h3>{selectedExam.title}</h3>
-                        <span>Aflevering senest: {formatDate(selectedExam.date)}</span>
+                        <h3>{exams.find(e => e.id === selectedSubmission.examId)?.title}</h3>
+                        <span>Aflevering senest: {formatDate(exams.find(e => e.id === selectedSubmission.examId)!.date)}</span>
                     </div>
 
                     <div className="exam-detail-content">
                         <div className="detail-left">
                             <h2 className="exam-title-display">Beskrivelse</h2>
                             <p className="exam-description">
-                                {selectedExam.description}
+                                {exams.find(e => e.id === selectedSubmission.examId)?.description}
                             </p>
 
                             <div className="upload-section">
@@ -139,35 +195,32 @@ export default function StudentDashboard() {
                                         className="display-none"
                                         onChange={handleFileChange}
                                     />
-                                    <button className="btn-upload-trigger" onClick={handleFileUpload}>
-                                        Upload besvarelse
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
-                                    </button>
+                                    {!submittedFileName && (
+                                        <button className="btn-upload-trigger" onClick={handleFileUpload}>
+                                            Upload besvarelse
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+                                        </button>
+                                    )}
 
-                                    {uploadedFile && (
+                                    {(uploadedFile || submittedFileName) && (
                                         <div className="file-display">
-                                            <span className="file-name">{uploadedFile.name}</span>
+                                            <span className="file-name">{uploadedFile?.name || submittedFileName}</span>
                                             <div className="file-actions">
                                                 <svg
                                                     onClick={handlePreview}
                                                     className="action-icon action-preview"
                                                     width="24"
                                                     height="24"
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    strokeWidth="2"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
                                                 >
                                                     <title>Forhåndsvisning</title>
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                                                     <circle cx="12" cy="12" r="3" />
                                                 </svg>
+                                                {!submittedFileName && (
                                                 <button
                                                     onClick={() => {
                                                         setUploadedFile(null);
-                                                        setSubmissionStatus(0);
                                                         if (fileInputRef.current) fileInputRef.current.value = "";
                                                     }}
                                                     className="action-icon action-remove"
@@ -178,6 +231,7 @@ export default function StudentDashboard() {
                                                         <line x1="6" y1="6" x2="18" y2="18"></line>
                                                     </svg>
                                                 </button>
+                                                    )}
                                             </div>
                                         </div>
                                     )}
@@ -186,22 +240,22 @@ export default function StudentDashboard() {
                                 <div className="progress-container">
                                     <div className="progress-bar">
                                         <div
-                                            className={`progress-fill ${submissionStatus === 0 ? 'progress-fill-none' : submissionStatus === 1 ? 'progress-fill-uploaded' : 'progress-fill-submitted'}`}
+                                            className={`progress-fill ${submissionProgress === 0 ? 'progress-fill-none' : submissionProgress === 1 ? 'progress-fill-uploaded' : 'progress-fill-submitted'}`}
                                         ></div>
                                     </div>
                                     <div className="progress-labels">
-                                        <span>Ikke afleveret</span>
-                                        <span>Besvarelse uploadet</span>
+                                        <span>Ikke Afleveret</span>
+                                        <span>Fil valgt</span>
                                         <span>Afleveret</span>
                                     </div>
                                 </div>
 
                                 <button
-                                    className={`btn-submit-final ${submissionStatus === 2 ? 'submit-disabled' : ''}`}
+                                    className={`btn-submit-final ${!!submittedFileName ? 'submit-disabled' : ''}`}
                                     onClick={handleSubmit}
-                                    disabled={submissionStatus !== 1}
+                                    disabled={!uploadedFile || !!submittedFileName}
                                 >
-                                    {submissionStatus === 2 ? 'Afleveret' : 'Aflever'}
+                                    {!!submittedFileName ? 'Afleveret' : 'Aflever'}
                                 </button>
                             </div>
                         </div>
@@ -216,8 +270,8 @@ export default function StudentDashboard() {
                                 isOpen={isPreviewOpen}
                                 onClose={() => setIsPreviewOpen(false)}
                                 fileUrl={previewUrl}
-                                fileName={uploadedFile?.name || "Fil"}
-                                fileType={uploadedFile?.type || ""}
+                                fileName={uploadedFile?.name || submittedFileName || "Fil"}
+                                fileType={uploadedFile?.type || selectedSubmission?.contentType || ""}
                             />
                         </div>
                     </div>

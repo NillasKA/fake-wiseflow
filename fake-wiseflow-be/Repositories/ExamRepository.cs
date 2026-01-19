@@ -53,4 +53,11 @@ public class ExamRepository
 
     public async Task RemoveAsync(Guid id) =>
         await _examsCollection.DeleteOneAsync(x => x.id == id);
+    
+    public async Task<Exam> GetExamBySubmissionIdAsync(Guid submissionId)
+    {
+        var exam = await _examsCollection.Find(x => x.submissionIds.Contains(submissionId)).FirstOrDefaultAsync();
+
+        return exam;
+    }
 }

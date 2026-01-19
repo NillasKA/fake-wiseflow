@@ -7,6 +7,7 @@ public interface ISubmissionRepository
     Task<List<Submission>> GetAsync();
     Task<Submission?> GetAsync(Guid id);
     Task<List<Submission>> GetByIdsAsync(List<Guid> ids);
+    Task<List<Submission>> GetByUserIdAsync(Guid userId);
     Task CreateAsync(Submission newSubmission);
     Task CreateBulkAsync(List<Submission> submissions);
     Task UpdateAsync(Guid id, Submission updatedSubmission);

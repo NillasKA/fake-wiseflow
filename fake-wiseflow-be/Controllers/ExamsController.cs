@@ -43,7 +43,7 @@ public class ExamsController : ControllerBase
         return exams;
     }
     
-    [HttpGet("submissions/{id}")]
+    [HttpGet("{id}/submissions")]
     public async Task<ActionResult<List<Guid>>> GetSubmissionIds(Guid id)
     {
         var submissionIds = await _examService.GetSubmissionIdsAsync(id);
@@ -91,5 +91,18 @@ public class ExamsController : ControllerBase
         await _examRepository.RemoveAsync(id);
 
         return NoContent();
+    }
+
+    [HttpGet("submissions/{submissionId}")]
+    public async Task<ActionResult<Exam>> GetExamBySubmissionId(Guid submissionId)
+    {
+        var exam = await _examService.GetExamBySubmissionIdAsync(submissionId);
+
+        if (exam is null)
+        {
+            return NotFound();
+        }
+        
+        return Ok(exam);
     }
 }

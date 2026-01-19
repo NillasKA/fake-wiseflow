@@ -10,4 +10,6 @@ public interface IExamService
     Task AddSubmissionAsync(Guid examId, Submission submission);
 
     Task BulkAddSubmissionsAsync(Guid examId, List<Submission> submissions);
+    
+    Task<Exam> GetExamBySubmissionIdAsync(Guid submissionId);
 }
