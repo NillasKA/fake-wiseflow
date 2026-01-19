@@ -3,17 +3,29 @@ import { useStudents } from "../../../hooks/useStudents";
 import { useSubmissions } from "../../../hooks/useSubmissions";
 import { useAuth } from "../../../hooks/useAuth";
 import { useExams } from "../../../hooks/useExams.ts";
+import { useExaminators } from "../../../hooks/useExaminators";
 import "../../../stylesheets/components/Modal.css";
 import "../../../stylesheets/components/ExamSubmissionPopup.css";
 
-// @ts-ignore
-export default function ExamSubmissionPopup({ examId, onClose }) {
-    const { users, loading: studentsLoading, getAllByInstitutionId } = useStudents();
-    const { submissions, loading: submissionsLoading, getByExamId, createBulk } = useSubmissions();
-    const { getById } = useExams()
+interface ExamSubmissionPopupProps {
+    examId: string;
+    onClose: () => void;
+}
+
+export default function ExamSubmissionPopup({ examId, onClose }: ExamSubmissionPopupProps) {
+    const { users, loading: studentsLoading, getAllByInstitutionId: getStudents } = useStudents();
+    const { submissions, loading: submissionsLoading, getByExamId, createBulk, remove } = useSubmissions();
+    const { examinators, loading: examinatorsLoading, getAllByInstitutionId: getExaminators } = useExaminators();
+    const { getById, assignExaminators } = useExams();
     const { user } = useAuth();
 
+    const [activeTab, setActiveTab] = useState<'students' | 'examinators'>('students');
+    // selectedStudentIds tracks the currently selected students in the UI
     const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
+    // originalStudentIds tracks the state from the database to calculate diffs
+    const [originalStudentIds, setOriginalStudentIds] = useState<string[]>([]);
+    
+    const [selectedExaminatorIds, setSelectedExaminatorIds] = useState<string[]>([]);
     const [error, setError] = useState("");
     const [showSuccess, setShowSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -24,8 +36,18 @@ export default function ExamSubmissionPopup({ examId, onClose }) {
                 setLoading(true);
                 const exam = await getById(examId);
 
-                await getAllByInstitutionId(exam.institutionId);
-                await getByExamId(examId);
+                await getStudents(exam.institutionId);
+                await getExaminators(exam.institutionId);
+                const currentSubmissions = await getByExamId(examId);
+                
+                // Initialize student selection state based on current submissions
+                const studentIds = currentSubmissions.map((s: any) => s.userId);
+                setSelectedStudentIds(studentIds);
+                setOriginalStudentIds(studentIds);
+                
+                if (exam.examinatorIds) {
+                    setSelectedExaminatorIds(exam.examinatorIds);
+                }
 
             } catch (err) {
                 setError(err instanceof Error ? err.message : "Failed to load data");
@@ -37,10 +59,7 @@ export default function ExamSubmissionPopup({ examId, onClose }) {
         loadData();
     }, [examId, user?.institutionId]);
 
-    // Filter out users who already have a submission
-    const existingUserIds = submissions.map(sub => sub.userId);
-    const availableStudents = users.filter(user => !existingUserIds.includes(user.id));
-
+    // Students Logic
     function toggleStudentSelection(userId: string) {
         setSelectedStudentIds(prev =>
             prev.includes(userId)
@@ -49,115 +68,248 @@ export default function ExamSubmissionPopup({ examId, onClose }) {
         );
     }
 
-    async function handleSubmit(e: React.FormEvent) {
+    async function handleStudentSubmit(e: React.FormEvent) {
         e.preventDefault();
         setError("");
         setLoading(true);
 
         try {
-            const newSubmissions = selectedStudentIds.map(userId => ({
-                userId,
-                examId
-            }));
+            // Calculate Diffs
+            const toAdd = selectedStudentIds.filter(id => !originalStudentIds.includes(id));
+            const toRemove = originalStudentIds.filter(id => !selectedStudentIds.includes(id));
 
-            if (newSubmissions.length === 0) {
-                setError("Vælg mindst én studerende");
-                setLoading(false);
-                return;
+            if (toAdd.length === 0 && toRemove.length === 0) {
+                 setShowSuccess(true); // Nothing to do, but show success to indicate "Saved" (no changes)
+                 setLoading(false);
+                 return;
             }
 
-            await createBulk(examId, newSubmissions);
+            // 1. Add new submissions
+            if (toAdd.length > 0) {
+                const newSubmissions = toAdd.map(userId => ({
+                    userId,
+                    examId
+                }));
+                await createBulk(examId, newSubmissions);
+            }
+
+            // 2. Remove deleted submissions
+            if (toRemove.length > 0) {
+                // We need submissionIds for the userIds to remove.
+                // Submissions state should be fresh from loadData or last save?
+                // Warning: 'submissions' from useSubmissions might be stale if we didn't refresh it right before?
+                // loadData calls getByExamId, which updates 'submissions'.
+                // So 'submissions' should contain the data matching 'originalStudentIds'.
+                
+                const submissionsToRemove = submissions.filter(s => toRemove.includes(s.userId));
+                
+                // Remove one by one (Promise.all)
+                await Promise.all(submissionsToRemove.map(s => remove(s.id)));
+            }
+
+            // Refresh data to update state
+            const updatedSubmissions = await getByExamId(examId);
+            const updatedStudentIds = updatedSubmissions.map((s: any) => s.userId);
+            setSelectedStudentIds(updatedStudentIds);
+            setOriginalStudentIds(updatedStudentIds);
+            
             setShowSuccess(true);
-            await getByExamId(examId);
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Kunne ikke oprette afleveringer");
+            setError(err instanceof Error ? err.message : "Kunne ikke gemme ændringer");
+            // If partial failure, we should probably reload data to reflect reality.
+            await getByExamId(examId);
         } finally {
             setLoading(false);
         }
     }
 
+    // Examinators Logic
+    function toggleExaminatorSelection(examinatorId: string) {
+        setSelectedExaminatorIds(prev =>
+            prev.includes(examinatorId)
+                ? prev.filter(id => id !== examinatorId)
+                : [...prev, examinatorId]
+        );
+    }
+
+    async function handleExaminatorSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        setError("");
+        setLoading(true);
+
+        try {
+            await assignExaminators(examId, selectedExaminatorIds);
+            setShowSuccess(true);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Kunne ikke tildele examinatorer");
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    // Reset success message when switching tabs
+    useEffect(() => {
+        if (showSuccess) {
+            setShowSuccess(false);
+        }
+    }, [activeTab]);
+
+
     return (
         <>
+            <div className="tab-header" style={{ display: 'flex', borderBottom: '1px solid #ddd', marginBottom: '15px' }}>
+                <button 
+                    type="button"
+                    onClick={() => setActiveTab('students')}
+                    style={{
+                        padding: '10px 20px',
+                        background: activeTab === 'students' ? '#f0f7fa' : 'transparent',
+                        border: 'none',
+                        borderBottom: activeTab === 'students' ? '2px solid #5a8fb0' : 'none',
+                        fontWeight: activeTab === 'students' ? 'bold' : 'normal',
+                        cursor: 'pointer'
+                    }}
+                >
+                    Studerende
+                </button>
+                <button 
+                    type="button"
+                    onClick={() => setActiveTab('examinators')}
+                    style={{
+                        padding: '10px 20px',
+                        background: activeTab === 'examinators' ? '#f0f7fa' : 'transparent',
+                        border: 'none',
+                        borderBottom: activeTab === 'examinators' ? '2px solid #5a8fb0' : 'none',
+                        fontWeight: activeTab === 'examinators' ? 'bold' : 'normal',
+                        cursor: 'pointer'
+                    }}
+                >
+                    Examinatorer
+                </button>
+            </div>
+
             {showSuccess ? (
                 <div className="modal-body">
                     <div className="success-container">
-                        <p className="success-title">✓ Afleveringer oprettet succesfuldt!</p>
-                        <p className="success-message">
-                            Luk denne popup for at se de nye afleveringer!
-                        </p>
+                        <p className="success-title">✓ Ændringer gemt succesfuldt!</p>
+                        <button 
+                            type="button" 
+                            className="btn-submit" 
+                            onClick={() => setShowSuccess(false)}
+                            style={{ marginTop: '10px' }}
+                        >
+                            Fortsæt redigering
+                        </button>
                     </div>
                 </div>
             ) : (
-                <form onSubmit={handleSubmit}>
-                    <div className="modal-body">
-                        {error && <div className="modal-error">{error}</div>}
+                activeTab === 'students' ? (
+                    <form onSubmit={handleStudentSubmit}>
+                        <div className="modal-body">
+                            {error && <div className="modal-error">{error}</div>}
 
-                        <div className="submission-section">
-                            <h3 className="section-title">Nuværende afleveringer</h3>
-                            {submissionsLoading ? (
-                                <p className="loading-text">Henter afleveringer...</p>
-                            ) : submissions.length === 0 ? (
-                                <p className="info-text">Ingen afleveringer endnu</p>
-                            ) : (
-                                <ul className="submissions-list">
-                                    {submissions.map(submission => {
-                                        const student = users.find(u => u.id === submission.userId);
-
-                                        return (
-                                            <li key={submission.id} className="submission-item">
-                                                {student ? `${student.userName}` : 'Ukendt studerende'}
-                                            </li>
-                                        );
-                                    })}
-                                </ul>
-                            )}
+                            <div className="submission-section">
+                                <h3 className="section-title">Vælg Studerende</h3>
+                                <p className="info-text" style={{marginBottom: '10px'}}>
+                                    Vælg de studerende der skal deltage i denne eksamen.
+                                </p>
+                                {studentsLoading ? (
+                                    <p className="loading-text">Henter studerende...</p>
+                                ) : users.length === 0 ? (
+                                    <p className="info-text">Ingen studerende fundet for denne institution.</p>
+                                ) : (
+                                    <div className="students-selection">
+                                        {users.map(student => (
+                                            <div key={student.id} className="student-checkbox">
+                                                <input
+                                                    type="checkbox"
+                                                    id={`student-${student.id}`}
+                                                    checked={selectedStudentIds.includes(student.id)}
+                                                    onChange={() => toggleStudentSelection(student.id)}
+                                                    disabled={loading}
+                                                />
+                                                <label htmlFor={`student-${student.id}`}>
+                                                    {`${student.userName}`} <span style={{color: '#888', fontSize: '0.9em'}}>({student.email})</span>
+                                                </label>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
-                        <div className="submission-section">
-                            <h3 className="section-title">Tilføj nye studerende til denne eksamen</h3>
-                            {studentsLoading ? (
-                                <p className="loading-text">Henter studerende...</p>
-                            ) : availableStudents.length === 0 ? (
-                                <p className="info-text">Alle studerende er allerede tilføjet</p>
-                            ) : (
-                                <div className="students-selection">
-                                    {availableStudents.map(student => (
-                                        <div key={student.id} className="student-checkbox">
-                                            <input
-                                                type="checkbox"
-                                                id={`student-${student.id}`}
-                                                checked={selectedStudentIds.includes(student.id)}
-                                                onChange={() => toggleStudentSelection(student.id)}
-                                                disabled={loading}
-                                            />
-                                            <label htmlFor={`student-${student.id}`}>
-                                                {`${student.userName}`}
-                                            </label>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
+                        <div className="modal-footer">
+                            <button
+                                type="button"
+                                className="btn-cancel"
+                                onClick={onClose}
+                                disabled={loading}
+                            >
+                                Luk
+                            </button>
+                            <button
+                                type="submit"
+                                className="btn-submit"
+                                disabled={loading}
+                            >
+                                {loading ? "Gemmer..." : "Gem ændringer"}
+                            </button>
                         </div>
-                    </div>
+                    </form>
+                ) : (
+                    <form onSubmit={handleExaminatorSubmit}>
+                        <div className="modal-body">
+                            {error && <div className="modal-error">{error}</div>}
 
-                    <div className="modal-footer">
-                        <button
-                            type="button"
-                            className="btn-cancel"
-                            onClick={onClose}
-                            disabled={loading}
-                        >
-                            Annuller
-                        </button>
-                        <button
-                            type="submit"
-                            className="btn-submit"
-                            disabled={loading || selectedStudentIds.length === 0}
-                        >
-                            {loading ? "Opretter..." : "Opret afleveringer"}
-                        </button>
-                    </div>
-                </form>
+                            <div className="submission-section">
+                                <h3 className="section-title">Vælg Examinatorer</h3>
+                                <p className="info-text" style={{marginBottom: '10px'}}>
+                                    Vælg de examinatorer der skal være tilknyttet denne eksamen.
+                                </p>
+                                {examinatorsLoading ? (
+                                    <p className="loading-text">Henter examinatorer...</p>
+                                ) : examinators.length === 0 ? (
+                                    <p className="info-text">Ingen examinatorer fundet for denne institution.</p>
+                                ) : (
+                                    <div className="students-selection">
+                                        {examinators.map(examinator => (
+                                            <div key={examinator.id} className="student-checkbox">
+                                                <input
+                                                    type="checkbox"
+                                                    id={`examinator-${examinator.id}`}
+                                                    checked={selectedExaminatorIds.includes(examinator.id)}
+                                                    onChange={() => toggleExaminatorSelection(examinator.id)}
+                                                    disabled={loading}
+                                                />
+                                                <label htmlFor={`examinator-${examinator.id}`}>
+                                                    {examinator.userName} <span style={{color: '#888', fontSize: '0.9em'}}>({examinator.email})</span>
+                                                </label>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="modal-footer">
+                            <button
+                                type="button"
+                                className="btn-cancel"
+                                onClick={onClose}
+                                disabled={loading}
+                            >
+                                Luk
+                            </button>
+                            <button
+                                type="submit"
+                                className="btn-submit"
+                                disabled={loading}
+                            >
+                                {loading ? "Gemmer..." : "Gem ændringer"}
+                            </button>
+                        </div>
+                    </form>
+                )
             )}
         </>
     );
