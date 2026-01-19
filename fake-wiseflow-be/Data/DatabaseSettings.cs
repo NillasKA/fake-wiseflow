@@ -13,4 +13,6 @@ public class DatabaseSettings
     public string UsersCollectionName => "Users";
     
     public string SubmissionsCollectionName => "Submissions";
+    
+    public string EvaluationsCollectionName => "Evaluations";
 }

@@ -14,11 +14,13 @@ public class SubmissionsController : ControllerBase
 {
     private readonly ISubmissionService _submissionService;
     private readonly ISubmissionExamCoordinatorService _submissionExamCoordinatorService;
+    private readonly IEvaluationService _evaluationService;
 
-    public SubmissionsController(ISubmissionService submissionService, ISubmissionExamCoordinatorService submissionExamCoordinatorService)
+    public SubmissionsController(ISubmissionService submissionService, ISubmissionExamCoordinatorService submissionExamCoordinatorService, IEvaluationService evaluationService)
     {
         _submissionService = submissionService;
         _submissionExamCoordinatorService = submissionExamCoordinatorService;
+        _evaluationService = evaluationService;
     }
     
     [HttpGet]
@@ -38,6 +40,25 @@ public class SubmissionsController : ControllerBase
         }
         
         return submission;
+    }
+    
+    [HttpPost("{id}/evaluation")]
+    public async Task<ActionResult> PostEvaluation(Guid id, Evaluation evaluation)
+    {
+        var submission = await _submissionService.GetByIdAsync(id);
+        if (submission is null)
+        {
+            return NotFound("Submission not found");
+        }
+
+        var createdEvaluation = await _evaluationService.CreateEvaluationAsync(evaluation);
+        
+        submission.evaluationId = createdEvaluation.id;
+        submission.status = SubmissionStatus.Graded;
+        
+        await _submissionService.UpdateAsync(id, submission);
+        
+        return Ok(createdEvaluation);
     }
 
     [HttpGet("exam/{examId}")]

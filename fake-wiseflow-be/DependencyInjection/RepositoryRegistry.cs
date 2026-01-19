@@ -10,6 +10,8 @@ public static class RepositoryRegistry
         builder.Services.AddScoped<ExamRepository>();
         builder.Services.AddScoped<IInstitutionRepository, InstitutionRepository>();
         builder.Services.AddScoped<ISubmissionRepository, SubmissionRepository>();
+        builder.Services.AddScoped<IEvaluationRepository, EvaluationRepository>();
+
         
         return builder;
     }
