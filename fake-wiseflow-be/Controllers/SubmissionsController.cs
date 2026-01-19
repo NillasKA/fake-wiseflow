@@ -14,11 +14,13 @@ public class SubmissionsController : ControllerBase
 {
     private readonly ISubmissionService _submissionService;
     private readonly ISubmissionExamCoordinatorService _submissionExamCoordinatorService;
+    private readonly IEvaluationService _evaluationService;
 
-    public SubmissionsController(ISubmissionService submissionService, ISubmissionExamCoordinatorService submissionExamCoordinatorService)
+    public SubmissionsController(ISubmissionService submissionService, ISubmissionExamCoordinatorService submissionExamCoordinatorService, IEvaluationService evaluationService)
     {
         _submissionService = submissionService;
         _submissionExamCoordinatorService = submissionExamCoordinatorService;
+        _evaluationService = evaluationService;
     }
     
     [HttpGet]
@@ -38,6 +40,38 @@ public class SubmissionsController : ControllerBase
         }
         
         return submission;
+    }
+    
+    [HttpPost("{id}/evaluation")]
+    public async Task<ActionResult> PostEvaluation(Guid id, Evaluation evaluation)
+    {
+        var submission = await _submissionService.GetByIdAsync(id);
+        if (submission is null)
+        {
+            return NotFound("Submission not found");
+        }
+
+        var createdEvaluation = await _evaluationService.CreateEvaluationAsync(evaluation);
+        
+        submission.evaluationId = createdEvaluation.id;
+        submission.status = SubmissionStatus.Graded;
+        
+        await _submissionService.UpdateAsync(id, submission);
+        
+        return Ok(createdEvaluation);
+    }
+    
+    [HttpGet("evaluation/{id}")]
+    public async Task<ActionResult<Evaluation>> GetEvaluation(Guid id)
+    {
+        var evaluation = await _evaluationService.GetEvaluationAsync(id);
+        
+        if (evaluation is null)
+        {
+            return NotFound();
+        }
+        
+        return Ok(evaluation);
     }
 
     [HttpGet("exam/{examId}")]
@@ -123,6 +157,21 @@ public class SubmissionsController : ControllerBase
         }
 
         var submission = await _submissionExamCoordinatorService.GetStudentSubmissionAsync(examId, userId);
+
+        if (submission == null || submission.FileData == null || submission.FileData.Length == 0)
+        {
+            return NotFound("Submission file not found.");
+        }
+
+        return File(submission.FileData, submission.ContentType ?? "application/octet-stream");
+    }
+
+    [HttpGet("{submissionId}/file-as-examinator")]
+    [ApiExplorerSettings(IgnoreApi = true)]
+    [Authorize(Roles = "Examinator,InstitutionAdmin,SuperAdmin")]
+    public async Task<IActionResult> GetSubmissionFileForExaminator(Guid submissionId)
+    {
+        var submission = await _submissionService.GetByIdAsync(submissionId);
 
         if (submission == null || submission.FileData == null || submission.FileData.Length == 0)
         {

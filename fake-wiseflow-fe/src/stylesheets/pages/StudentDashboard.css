@@ -5,6 +5,7 @@
     min-height: calc(100vh - 80px);
     /* Adjust based on header height */
     font-family: 'Inter', sans-serif;
+    align-items: flex-start;
 }
 
 /* Sidebar - Exam List */
@@ -25,6 +26,8 @@
     display: flex;
     justify-content: space-between;
     font-weight: 500;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
 }
 
 .header-col {
@@ -75,9 +78,11 @@
 /* Main Content - Exam Detail */
 .exam-detail-container {
     flex: 1;
-    background: white;
+    background: transparent;
+    /* Changed from white */
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    box-shadow: none;
+    /* Removed box-shadow */
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -90,12 +95,17 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
 }
 
 .exam-detail-content {
-    padding: 32px;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     display: flex;
     gap: 48px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
 }
 
 .detail-left {
@@ -276,4 +286,14 @@ p.exam-description {
 
 .display-none {
     display: none;
+}
+
+.results-page-container {
+    width: 100%;
+    padding-top: 32px;
+    font-family: 'Inter', sans-serif;
+    min-height: calc(100vh - 80px); /* Adjust based on header height */
+    display: flex;
+    justify-content: center; /* Center the content if it doesn't take 100% width */
+    align-items: flex-start;
 }

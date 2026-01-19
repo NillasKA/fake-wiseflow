@@ -84,6 +84,19 @@ export function useExams() {
         }
     }
 
+    async function assignExaminators(examId: string, examinatorIds: string[]) {
+        const response = await fetch(`${API_URL}/${examId}/assign-examinators`, {
+            method: "PUT",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(examinatorIds)
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to assign examinators");
+        }
+    }
+
     return {
         exams,
         loading,
@@ -93,6 +106,7 @@ export function useExams() {
         create,
         update,
         remove,
-        getAllForInstitution
+        getAllForInstitution,
+        assignExaminators
     };
 }

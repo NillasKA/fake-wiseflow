@@ -61,6 +61,23 @@ public class ExamsController : ControllerBase
         return Ok(newExam);
     }
 
+    [HttpPut("{id}/assign-examinators")]
+    public async Task<IActionResult> AssignExaminators(Guid id, [FromBody] List<Guid> examinatorIds)
+    {
+        var exam = await _examRepository.GetAsync(id);
+
+        if (exam is null)
+        {
+            return NotFound();
+        }
+
+        exam.ExaminatorIds = examinatorIds;
+
+        await _examRepository.UpdateAsync(id, exam);
+
+        return NoContent();
+    }
+
     [HttpPut]
     public async Task<IActionResult> Update(Guid id, Exam updatedExam)
     {

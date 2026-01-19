@@ -1,5 +1,5 @@
 
-.modal-overlay {
+.file-preview-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -13,7 +13,7 @@
     backdrop-filter: blur(4px);
     animation: fadeIn 0.2s ease-out;
 }
-.modal-container {
+.file-preview-container {
     background: white;
     border-radius: 12px;
     padding: 24px;
@@ -25,7 +25,7 @@
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     animation: scaleIn 0.2s ease-out;
 }
-.modal-header {
+.file-preview-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -33,7 +33,7 @@
     border-bottom: 1px solid #eee;
     padding-bottom: 16px;
 }
-.modal-header h3 {
+.file-preview-header h3 {
     margin: 0;
     font-size: 1.25rem;
     font-weight: 600;
@@ -52,7 +52,7 @@
 .btn-close:hover {
     color: #000;
 }
-.modal-content {
+.file-preview-content {
     flex: 1;
     overflow: auto;
     display: flex;
@@ -63,13 +63,13 @@
     border-radius: 8px;
 }
 
-.modal-content img {
+.file-preview-content img {
     max-width: 100%;
     max-height: 80vh;
     object-fit: contain;
 }
 
-.modal-content iframe {
+.file-preview-content iframe {
     border: none;
 }
 
@@ -89,6 +89,25 @@
 .btn-download:hover {
     background: #1d4ed8;
 }
+
+.btn-download-top {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 12px;
+    background: #5a8fb0;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: none; /* remove underline from <a> */
+}
+
+.btn-download-top:hover {
+    background: #4a7a95;
+}
+
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }

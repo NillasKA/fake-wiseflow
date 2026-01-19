@@ -5,7 +5,8 @@ export interface Exam {
     description: string;
     type: string;
     submissionIds: Array<string>;
+    examinatorIds: Array<string>;
     institutionId: string;
 }
 
-export type ExamPartial = Omit<Exam, 'id' | 'submissionIds'>;
+export type ExamPartial = Omit<Exam, 'id' | 'submissionIds' | 'examinatorIds'>;

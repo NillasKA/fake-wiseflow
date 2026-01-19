@@ -87,6 +87,20 @@ export function useSubmissions() {
         return res.ok;
     }
 
+    async function remove(id: string) {
+        setLoading(true);
+        const res = await fetch(`${API_URL}?id=${id}`, {
+            method: "DELETE",
+            credentials: "include"
+        });
+
+        if (!res.ok) {
+            throw new Error("Failed to delete submission");
+        }
+        setLoading(false);
+        return res.ok;
+    }
+
     return {
         submissions,
         loading,
@@ -94,6 +108,7 @@ export function useSubmissions() {
         getByUserId,
         create,
         update,
-        createBulk
+        createBulk,
+        remove
     };
 }

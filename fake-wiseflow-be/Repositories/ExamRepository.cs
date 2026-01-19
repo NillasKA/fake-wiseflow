@@ -24,13 +24,13 @@ public class ExamRepository
 
     public async Task<List<Exam>> GetAsync() =>
         await _examsCollection.Find(_ => true).ToListAsync();
-
     public async Task<Exam?> GetAsync(Guid id) =>
         await _examsCollection.Find(x => x.id == id).FirstOrDefaultAsync();
-
     public async Task<List<Exam>> GetByInstitutionIdAsync(Guid institutionId) =>
         await _examsCollection.Find(x => x.InstitutionId == institutionId).ToListAsync();
 
+    public async Task<List<Exam>> GetByExaminatorIdAsync(Guid examinatorId) =>
+        await _examsCollection.Find(x => x.ExaminatorIds.Contains(examinatorId)).ToListAsync();
 
     public async Task<List<Guid>> GetSubmissionIdsAsync(Guid examId)
     {
@@ -47,10 +47,8 @@ public class ExamRepository
     
     public async Task CreateAsync(Exam newExam) =>
         await _examsCollection.InsertOneAsync(newExam);
-
     public async Task UpdateAsync(Guid id, Exam updatedExam) =>
         await _examsCollection.ReplaceOneAsync(x => x.id == id, updatedExam);
-
     public async Task RemoveAsync(Guid id) =>
         await _examsCollection.DeleteOneAsync(x => x.id == id);
     
