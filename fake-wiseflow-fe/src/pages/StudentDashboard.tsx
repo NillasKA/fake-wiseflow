@@ -6,6 +6,7 @@ import type { Exam } from '../models/Exam';
 import type { Submission } from '../models/Submission';
 import '../stylesheets/pages/StudentDashboard.css';
 import FilePreviewModal from '../components/FilePreviewModal';
+import PopupModal from '../components/administration/PopupModal';
 
 export default function StudentDashboard() {
     const { getByUserId, update } = useSubmissions();
@@ -21,6 +22,8 @@ export default function StudentDashboard() {
 
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    
+    const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -91,7 +94,15 @@ export default function StudentDashboard() {
             await update(selectedSubmission.id, uploadedFile);
             alert("Afleveret succesfuldt!");
             setUploadedFile(null);
-            getByUserId(user.id).then(setSubmissions);
+            
+            const freshSubmissions = await getByUserId(user.id);
+            setSubmissions(freshSubmissions);
+            
+            const freshSelected = freshSubmissions.find((s: Submission) => s.id === selectedSubmission.id);
+            if (freshSelected) {
+                setSelectedSubmission(freshSelected);
+            }
+            
         } catch (error) {
             console.error("Failed to submit", error);
             alert("Fejl ved aflevering.");
@@ -252,7 +263,7 @@ export default function StudentDashboard() {
 
                                 <button
                                     className={`btn-submit-final ${!!submittedFileName ? 'submit-disabled' : ''}`}
-                                    onClick={handleSubmit}
+                                    onClick={() => setIsSubmitModalOpen(true)}
                                     disabled={!uploadedFile || !!submittedFileName}
                                 >
                                     {!!submittedFileName ? 'Afleveret' : 'Aflever'}
@@ -277,6 +288,34 @@ export default function StudentDashboard() {
                     </div>
                 </div>
             )}
+            
+            <PopupModal
+                isOpen={isSubmitModalOpen}
+                onClose={() => setIsSubmitModalOpen(false)}
+                header="Bekræft aflevering"
+            >
+                <div className="modal-body">
+                    <p>Er du sikker på, at du vil aflevere denne besvarelse?</p>
+                    <p style={{fontSize: '0.9em', color: '#666'}}>Dette kan ikke fortrydes.</p>
+                </div>
+                <div className="modal-footer">
+                     <button
+                        className="btn-cancel"
+                        onClick={() => setIsSubmitModalOpen(false)}
+                    >
+                        Annuller
+                    </button>
+                    <button
+                        className="btn-submit"
+                        onClick={() => {
+                            handleSubmit();
+                            setIsSubmitModalOpen(false);
+                        }}
+                    >
+                        Bekræft
+                    </button>
+                </div>
+            </PopupModal>
         </div>
     );
 }

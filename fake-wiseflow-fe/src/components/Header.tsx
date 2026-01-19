@@ -30,10 +30,16 @@ const Header: React.FC = () => {
                     <Link to="/" className="brand">FW</Link>
 
                     <nav className="nav">
-                        <Link to="/exams">Eksamener</Link>
+                        {!user?.roles.includes("SuperAdmin",) && (
+                            <Link to="/exams">Eksamener</Link>
+                        )}
                         <span className="divider" aria-hidden="true" />
-                        <Link to="/results">Resultater</Link>
-                        <span className="divider" aria-hidden="true" />
+                        {user?.roles.includes("Student") && (
+                            <>
+                                <Link to="/results">Resultater</Link>
+                                <span className="divider" aria-hidden="true" />
+                            </>
+                        )}
                         {user?.roles.includes("SuperAdmin",) && (
                             <Link to="/admin">Admin</Link>
                         )}

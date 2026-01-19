@@ -60,6 +60,19 @@ public class SubmissionsController : ControllerBase
         
         return Ok(createdEvaluation);
     }
+    
+    [HttpGet("evaluation/{id}")]
+    public async Task<ActionResult<Evaluation>> GetEvaluation(Guid id)
+    {
+        var evaluation = await _evaluationService.GetEvaluationAsync(id);
+        
+        if (evaluation is null)
+        {
+            return NotFound();
+        }
+        
+        return Ok(evaluation);
+    }
 
     [HttpGet("exam/{examId}")]
     public async Task<ActionResult<List<Submission>>> GetByExamId(Guid examId)
@@ -144,6 +157,21 @@ public class SubmissionsController : ControllerBase
         }
 
         var submission = await _submissionExamCoordinatorService.GetStudentSubmissionAsync(examId, userId);
+
+        if (submission == null || submission.FileData == null || submission.FileData.Length == 0)
+        {
+            return NotFound("Submission file not found.");
+        }
+
+        return File(submission.FileData, submission.ContentType ?? "application/octet-stream");
+    }
+
+    [HttpGet("{submissionId}/file-as-examinator")]
+    [ApiExplorerSettings(IgnoreApi = true)]
+    [Authorize(Roles = "Examinator,InstitutionAdmin,SuperAdmin")]
+    public async Task<IActionResult> GetSubmissionFileForExaminator(Guid submissionId)
+    {
+        var submission = await _submissionService.GetByIdAsync(submissionId);
 
         if (submission == null || submission.FileData == null || submission.FileData.Length == 0)
         {

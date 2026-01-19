@@ -82,8 +82,8 @@ public class ExaminatorController : ControllerBase
     public async Task<IActionResult> GetSubmittedSubmissionsForExam(Guid examId)
     {
         var submissions = await _submissionExamCoordinatorService.GetSubmissionsAsync(examId);
-        var submittedSubmissions = submissions.Where(s => s.status == SubmissionStatus.Submitted).ToList();
-        return Ok(submittedSubmissions);
+        var relevantSubmissions = submissions.Where(s => s.status == SubmissionStatus.Submitted || s.status == SubmissionStatus.Graded).ToList();
+        return Ok(relevantSubmissions);
     }
 
     [HttpDelete("{id}")]

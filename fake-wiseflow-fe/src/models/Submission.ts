@@ -6,6 +6,7 @@ export interface Submission {
     uploadDate: Date;
     status: string;
     contentType: string;
+    evaluationId?: string;
 }
 
-export type SubmissionPartial = Omit<Submission, 'id' | 'fileName' | 'uploadDate' | 'status' | 'contentType'>;
+export type SubmissionPartial = Omit<Submission, 'id' | 'fileName' | 'uploadDate' | 'status' | 'contentType' | 'evaluationId'>;
